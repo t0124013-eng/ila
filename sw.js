@@ -1,12 +1,13 @@
 /* メモリーポット スクール版 service worker
    アプリを更新したら VERSION の数字を1つ上げてください（例：v1 → v2）。 */
-const VERSION = 'v1';
+const VERSION = 'v3';
 const CORE = 'memory-pot-school-core-' + VERSION;
 const FONTS = 'memory-pot-school-fonts';
 const CORE_FILES = [
   './', './index.html', './manifest.webmanifest', './vendor/xlsx.full.min.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',
-  './icons/apple-touch-icon.png', './icons/favicon-32.png'
+  './icons/apple-touch-icon.png', './icons/favicon-32.png',
+  './img/mic.png', './img/read.png', './img/cheer.png', './img/guide.png', './img/welcome.png', './img/think.png', './img/tablet.png', './img/camera.png', './img/juggle.png', './img/coffee.png', './img/rail.png', './img/run.png'
 ];
 
 self.addEventListener('install', e => {

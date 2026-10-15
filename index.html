@@ -543,6 +543,42 @@ body{word-break:auto-phrase;line-break:strict}
 .deck-row.current{background:color-mix(in srgb,var(--desk) 60%,transparent);border-radius:10px;padding-inline:8px;margin-inline:-8px}
 .mix-opt.danger{border-color:color-mix(in srgb,var(--no) 40%,var(--line))}
 .mix-opt.danger b{color:var(--no)}
+
+/* ---------- 先生キャラクター ---------- */
+.home-stagebox{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+.home-row{display:flex;align-items:flex-end;justify-content:center;gap:2px;width:100%}
+.home .home-plant .plant.pot{width:min(44vw,184px);max-height:32vh}
+.home-sensei{flex:none;border:0;background:none;padding:0;cursor:pointer;height:min(29vh,214px);margin:0 0 4px -6px;-webkit-tap-highlight-color:transparent}
+.home-sensei img{display:block;height:100%;width:auto;filter:drop-shadow(0 8px 10px rgba(29,47,69,.18))}
+.home-sensei.flip img{transform:scaleX(-1)}
+.home-sensei.hop{animation:hop .45s ease-out}
+.scene[data-tod="night"] .home-sensei img{filter:drop-shadow(0 0 1.5px rgba(255,255,255,.75)) drop-shadow(0 8px 10px rgba(0,0,0,.3))}
+@keyframes hop{0%,100%{transform:none}40%{transform:translateY(-10px)}}
+.say{position:relative;align-self:flex-start;margin-left:max(4%,8px);max-width:min(78%,270px);background:rgba(255,255,255,.94);color:#1D2F45;font-size:.82rem;font-weight:700;line-height:1.55;padding:9px 14px;border-radius:16px;box-shadow:0 6px 18px rgba(29,47,69,.14);text-align:left;text-wrap:pretty;animation:pop .3s ease-out}
+.say::after{content:"";position:absolute;left:34px;bottom:-7px;width:14px;height:14px;background:inherit;transform:rotate(45deg);border-radius:0 0 3px 0}
+.coach{display:flex;align-items:flex-end;gap:10px}
+.coach-fig{position:relative;flex:none;width:78px;height:108px;display:flex;align-items:flex-end;justify-content:center}
+.coach-fig::before{content:"";position:absolute;left:50%;bottom:0;width:72px;height:72px;transform:translateX(-50%);border-radius:50%;background:#E2EBF5}
+.coach-fig img{position:relative;max-width:88px;max-height:108px;object-fit:contain}
+.coach-say{position:relative;flex:1;min-width:0;background:var(--card);border-radius:14px;padding:10px 13px;font-size:.8rem;line-height:1.7;box-shadow:var(--shadow);margin-bottom:22px}
+.coach-say::before{content:"";position:absolute;left:-6px;bottom:16px;width:12px;height:12px;background:inherit;transform:rotate(45deg);border-radius:0 0 0 3px}
+.coach-say b{font-weight:900}
+.pop-back{position:absolute;inset:0;z-index:35;background:rgba(10,16,24,.5);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+.pop{position:relative;width:100%;max-width:320px;margin-top:64px;background:var(--card);border-radius:24px;padding:100px 20px 20px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center;animation:popIn .4s cubic-bezier(.3,1.4,.5,1)}
+.pop-fig{position:absolute;left:50%;top:-78px;transform:translateX(-50%);width:160px;height:172px;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+.pop-fig::before{content:"";position:absolute;left:50%;bottom:0;width:128px;height:128px;transform:translateX(-50%);border-radius:50%;background:#E2EBF5;border:5px solid var(--card)}
+.pop-fig img{position:relative;max-width:160px;max-height:172px;object-fit:contain}
+.pop h2{margin:0 0 8px;font-size:1.2rem;font-weight:900;text-wrap:balance}
+.pop-msg{font-size:.85rem;line-height:1.75;color:var(--ink-soft)}
+.pop-msg b{color:var(--ink)}
+.pop-acts{display:flex;gap:8px;margin-top:18px}
+.pop-btn{flex:1;border:0;border-radius:14px;background:var(--ink);color:var(--desk);font:inherit;font-size:.9rem;font-weight:900;padding:13px 10px;cursor:pointer}
+.pop-btn.sub{flex:.7;background:var(--desk-2);color:var(--ink)}
+.pop-dirs{list-style:none;margin:4px 0 12px;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.pop-dirs li{display:flex;align-items:center;gap:10px;border-radius:12px;padding:8px 12px;font-weight:700;color:var(--ink);background:var(--desk)}
+.pop-dirs li i{font-style:normal;font-family:var(--f-mono);font-weight:700;width:1.2em;text-align:center}
+.pop-dirs .k i{color:var(--know)}.pop-dirs .n i{color:var(--no)}.pop-dirs .h i{color:var(--hmm)}
+@keyframes popIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 <style>
@@ -575,10 +611,16 @@ img{max-width:100%}
       <section class="screen scene home" id="scr-home" data-tod="day">
         <div class="sky-deco" aria-hidden="true"><span class="sun"></span><span class="cloud c1"></span><span class="cloud c2"></span><span class="stars"></span></div>
         <div class="home-head">
-          <div class="home-eyebrow">MEMORY POT</div><div class="trial-badge">体験版</div>
+          <div class="home-eyebrow">MEMORY POT</div>
           <h1 class="home-title">メモリーポット</h1>
         </div>
-        <button class="home-plant" id="homePlantBtn" type="button" aria-label="鉢の木にふれる"><span class="plant pot" id="homePlant" aria-hidden="true"></span></button>
+        <div class="home-stagebox">
+          <div class="say" id="homeSay" aria-live="polite"></div>
+          <div class="home-row">
+            <button class="home-sensei" id="homeSensei" type="button" aria-label="先生に話しかける"><img src="img/guide.png" alt=""></button>
+            <button class="home-plant" id="homePlantBtn" type="button" aria-label="鉢の木にふれる"><span class="plant pot" id="homePlant" aria-hidden="true"></span></button>
+          </div>
+        </div>
         <div class="home-state">
           <div class="home-stage"><span class="g-lv" id="homeLv">Lv.1</span><span id="homeName">種</span><span class="health h0" id="homeHealth" hidden></span></div>
           <div class="home-streak"><svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1c.6 3-2.6 4.6-2.6 8 0 1.4.8 2.4 1.6 2.6C6.5 10 8 8.6 9.2 7.4c1 2 3.8 3.6 3.8 6.6A5 5 0 0 1 3 14c0-5 5-7 5-13z" fill="var(--fruit)"/><path d="M8 19a2.8 2.8 0 0 1-2.8-2.8c0-2 2-2.8 2.8-4.6.8 1.8 2.8 2.6 2.8 4.6A2.8 2.8 0 0 1 8 19z" fill="var(--bloom-c)"/></svg><b id="homeStreak">1</b><span>日 連続</span></div>
@@ -716,6 +758,7 @@ img{max-width:100%}
       <section class="screen" id="scr-result" hidden>
         <div class="scroll">
           <div class="res-head"><div class="eyebrow">Session clear</div><h2>おつかれさま</h2><p id="resSub"></p></div>
+          <div id="resCoach"></div>
           <div class="panel res-grow" id="resGrow">
             <div class="plant small" id="resPlant" aria-hidden="true"></div>
             <div class="g-info">
@@ -748,6 +791,7 @@ img{max-width:100%}
           <div class="panel list" id="deckList"></div>
 
           <h2 class="sec-title">単語帳を取り込む</h2>
+          <div class="coach"><div class="coach-fig"><img src="img/juggle.png" alt=""></div><div class="coach-say">単語帳は<b>Excel</b>やスプレッドシートからも取り込めるよ。A列に問題、B列に答えを入れてね。</div></div>
           <div class="panel imp">
             <div class="fmt" aria-label="取り込む表の形">
               <div class="fh">A列</div><div class="fh">B列</div><div class="fh">C列</div>
@@ -775,6 +819,7 @@ img{max-width:100%}
           <span style="width:52px"></span>
         </div>
         <div class="scroll">
+          <div id="growCoach"></div>
           <div class="panel xp-rules">
             <h2 class="sec-title" style="margin:0 0 8px">XPのもらい方</h2>
             <div class="rule"><span>カードを1枚めくる</span><b>+1</b></div>
@@ -788,7 +833,7 @@ img{max-width:100%}
             <p class="note" style="margin-top:8px"><span class="nb">XPが減ると、</span><span class="nb">木の段階が</span><span class="nb">下がることもあります。</span><span class="nb">その日に</span><span class="nb">1枚でもめくれば、</span><span class="nb">木はすぐ</span><span class="nb">元気に戻ります。</span></p>
             <h2 class="sec-title" style="margin:16px 0 8px">栄養剤</h2>
             <div class="rule"><span>「大樹」まで育て切る</span><b>1本</b></div>
-            <div class="rule"><span>大樹のあと、60XPためるごと</span><b>1本</b></div>
+            <div class="rule"><span>大樹のあと、300XPためるごと</span><b>1本</b></div>
             <p class="note" style="margin-top:8px"><span class="nb">栄養剤は</span><span class="nb">何本でも</span><span class="nb">ためておけます。</span><span class="nb">休んだあとに</span><span class="nb">TOPで使うと、</span><span class="nb">1本につき</span><span class="nb">休んだ1日分が</span><span class="nb">取り消され、</span><span class="nb">減ったXPも</span><span class="nb">戻ります。</span></p>
           </div>
           <div class="stages" id="stageList"></div>
@@ -817,6 +862,7 @@ img{max-width:100%}
           <span style="width:52px"></span>
         </div>
         <div class="scroll">
+          <div id="listCoach"></div>
           <p class="note" id="listNote"></p>
           <button class="cta" id="listStudy" type="button"><span><strong id="listStudyLabel">この単語だけでめくる</strong><small id="listSub"></small></span><span class="arrow">→</span></button>
           <div class="panel list" id="hmmList"></div>
@@ -852,6 +898,14 @@ img{max-width:100%}
         <button class="btn2" id="orgCancel" type="button">やめる</button>
       </div>
     </div>
+    <div class="pop-back" id="pop" hidden>
+      <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle">
+        <div class="pop-fig" aria-hidden="true"><img id="popImg" alt=""></div>
+        <h2 id="popTitle"></h2>
+        <div class="pop-msg" id="popMsg"></div>
+        <div class="pop-acts" id="popActs"></div>
+      </div>
+    </div>
     <div class="toast" id="toast" role="status" hidden></div>
     <div class="homebar" aria-hidden="true"></div>
   </div>
@@ -869,6 +923,19 @@ const $=id=>document.getElementById(id);
 const load=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
 const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- 先生（イラスト） ---------- */
+const SENSEI={mic:'img/mic.png',read:'img/read.png',cheer:'img/cheer.png',guide:'img/guide.png',welcome:'img/welcome.png',think:'img/think.png',
+  tablet:'img/tablet.png',camera:'img/camera.png',juggle:'img/juggle.png',coffee:'img/coffee.png',rail:'img/rail.png',run:'img/run.png'};
+const coach=(k,html)=>`<div class="coach"><div class="coach-fig"><img src="${SENSEI[k]}" alt=""></div><div class="coach-say">${html}</div></div>`;
+let popQ=[];
+function pop(o){popQ.push(o);if($('pop').hidden)nextPop();}
+function nextPop(){const P=$('pop'),o=popQ.shift();if(!o){P.hidden=true;return;}
+  $('popImg').src=SENSEI[o.img];$('popTitle').textContent=o.title;$('popMsg').innerHTML=o.msg||'';
+  const a=$('popActs');a.innerHTML='';
+  (o.acts||[['OK']]).forEach(([l,fn,sub])=>{const b=document.createElement('button');b.type='button';b.className='pop-btn'+(sub?' sub':'');b.textContent=l;
+    b.onclick=()=>{nextPop();if(fn)fn();};a.appendChild(b);});
+  P.hidden=false;const c=P.querySelector('.pop');c.style.animation='none';void c.offsetWidth;c.style.animation='';}
 
 /* ---------- 単語帳 ---------- */
 const UNIT_SUB={'Unit15-17':'熟語','Unit18-20':'単語・熟語'};
@@ -898,9 +965,9 @@ const saveAll=()=>{store(stKey(set.deck),status);store(KEY+'-set',set);store(KEY
 /* 連続ログイン：前日の続きなら+1、1日以上空いたら1に戻す */
 let streak=load(KEY+'-streak',{last:'',n:0});
 /* 学びの木：XP と段階 */
-/* 体験版：毎日20枚で約1週間で大樹（製品版は 40/110/250/450/750/1150/1700/2400/3300/4500） */
-const TRIAL=true;
-const STAGES=[['種',0],['芽',10],['双葉',25],['本葉',45],['若木',70],['小さな木',100],['枝を広げた木',140],['つぼみ',185],['満開',235],['実り',290],['大樹',340]];
+/* 本番：毎日続けて数か月で大樹 */
+const TRIAL=false;
+const STAGES=[['種',0],['芽',40],['双葉',110],['本葉',250],['若木',450],['小さな木',750],['枝を広げた木',1150],['つぼみ',1700],['満開',2400],['実り',3300],['大樹',4500]];
 let grow=load(KEY+'-grow',{xp:0,days:0,last:''});
 /* 休んだ日数ぶん木がしおれ、XPが減る */
 const parseKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);};
@@ -908,7 +975,7 @@ const dayDiff=(a,b)=>Math.round((parseKey(b)-parseKey(a))/864e5);
 const PEN_UNIT=5;
 const penaltyFor=n=>{let p=0;for(let i=1;i<=n;i++)p+=Math.min(i,3)*PEN_UNIT;return p;};
 /* 栄養剤：大樹で1本、その後300XPごとに1本。1本で休んだ1日分を取り消す */
-const MAX_XP=340,POTION_EVERY=60;
+const MAX_XP=4500,POTION_EVERY=300;
 grow.potions=grow.potions||0;grow.earned=grow.earned||0;grow.best=Math.max(grow.best||0,grow.xp);
 const earnedFor=best=>best>=MAX_XP?1+Math.floor((best-MAX_XP)/POTION_EVERY):0;
 function checkPotions(){grow.best=Math.max(grow.best,grow.xp);const e=earnedFor(grow.best);let got=0;if(e>grow.earned){got=e-grow.earned;grow.potions+=got;grow.earned=e;}return got;}
@@ -1002,6 +1069,7 @@ function renderGarden(){
 }
 function renderStages(){
   const L=levelOf(grow.xp),box=$('stageList');box.innerHTML='';
+  $('growCoach').innerHTML=coach('camera',`成長の記録をとっているよ。いまは<b>「${STAGES[L][0]}」</b>、学習した日は${grow.days}日。`);
   STAGES.forEach(([n,t],i)=>{const d=document.createElement('div');d.className='st'+(i>L?' locked':'')+(i===L?' now':'');
     d.innerHTML=`<div class="plant">${plantSVG(i,i===L?growInfo(grow.xp).t:.6)}</div><b>${i>L?'？？？':n}</b><small>Lv.${i+1}・${t}XP</small>`;box.appendChild(d);});
 }
@@ -1106,6 +1174,36 @@ function renderHome(){
   $('homeStreak').textContent=streak.n;
   const h=new Date().getHours();
   $('scr-home').dataset.tod=h>=5&&h<10?'morning':h<16&&h>=10?'day':h>=16&&h<19?'evening':'night';
+  homeSensei();
+}
+const HOME_TALK={
+  morning:['run',['おはよう！朝の5分は覚えやすいよ','朝イチの1セット、いってみよう','今日もいっしょに走りだそう']],
+  day:['guide',['この木は、覚えたぶんだけ育つよ','スタートを押して、今日の1セット！','「納得いかない」は辞書で確かめよう']],
+  evening:['rail',['おかえり！ひと休みしたら1セットどう？','今日の木、まだまだ伸びるよ','すきま時間の10枚もりっぱな勉強']],
+  night:['coffee',['夜までおつかれさま','寝る前の復習は記憶に残りやすいよ','5枚だけでも、木は喜ぶよ']]};
+let homeLines=[],sayI=0;
+function homeSensei(){
+  let [k,lines]=HOME_TALK[$('scr-home').dataset.tod];
+  if(wilt()){k='think';lines=['あれ？木がしおれてる…','今日1枚めくれば、すぐ元気に戻るよ'];}
+  else if(streak.n>=3)lines=[`${streak.n}日連続！いい調子だね`,...lines];
+  homeLines=lines;sayI=0;$('homeSay').textContent=lines[0];
+  const b=$('homeSensei');b.querySelector('img').src=SENSEI[k];b.classList.toggle('flip',k==='rail');
+  homePops();
+}
+$('homeSensei').onclick=()=>{const b=$('homeSensei');sayI=(sayI+1)%homeLines.length;$('homeSay').textContent=homeLines[sayI];
+  const s=$('homeSay');s.style.animation='none';void s.offsetWidth;s.style.animation='';
+  b.classList.remove('hop');void b.offsetWidth;b.classList.add('hop');};
+const MILESTONES=[3,7,14,30,50,100];
+function homePops(){
+  if(!load(KEY+'-hello',0)){store(KEY+'-hello',1);setTimeout(()=>{
+    pop({img:'welcome',title:'ようこそ、メモリーポットへ！',msg:`Unit1-3〜Unit18-20、あわせて<b>${BUILTINS.reduce((n,D)=>n+D.items.length,0).toLocaleString()}語</b>の英単語・熟語が入っています。<br>カードをめくるほど、鉢の木が育っていきます。`,acts:[['使い方を見る']]});
+    pop({img:'mic',title:'カードは3方向に仕分け',msg:'<ul class="pop-dirs"><li class="k"><i>→</i>右：覚えた</li><li class="n"><i>←</i>左：覚えていない</li><li class="h"><i>↑</i>上：納得いかない</li></ul>カードをタップして答えを見てから、スワイプで仕分けよう。',acts:[['はじめる']]});
+  },450);return;}
+  if(wilt()&&load(KEY+'-wiltpop','')!==todayKey()){store(KEY+'-wiltpop',todayKey());
+    setTimeout(()=>pop({img:'mic',title:'木がしおれています',msg:`${effMissed()}日お休みしていたね。<br>今日1枚でもめくれば、木は<b>すぐ元気に</b>戻るよ。`+(grow.potions?`<br>栄養剤（${grow.potions}本）を使うと、休んだ日を取り消せます。`:''),
+      acts:[['あとで',null,1],['1セットやる',()=>show('top')]]}),450);return;}
+  if(MILESTONES.includes(streak.n)&&load(KEY+'-mspop','')!==streak.n+'@'+streak.last){store(KEY+'-mspop',streak.n+'@'+streak.last);
+    setTimeout(()=>pop({img:'run',title:`${streak.n}日連続！`,msg:`毎日つづけていて、えらい！<br>連続日数が長いほど、その日はじめての1枚の<b>ボーナスXP</b>が増えるよ（最大+14）。`,acts:[['今日もやる',()=>show('top')]]}),450);}
 }
 
 function renderSubjects(){
@@ -1229,6 +1327,18 @@ function finish(){
   $('resNext').innerHTML=gi.nextName?nb(`Lv.${gi.L+1} ${gi.name} ・ `,`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb(`Lv.${gi.L+1} ${gi.name} ・ `,'次の栄養剤まで',`あと ${nextPotionIn()} XP`);
   const msgs=[];if(sess.startWilt>0&&wilt()===0)msgs.push(nb('木が元気を','取り戻しました！'));if(gi.L>L0)msgs.push(nb('レベルアップ！',`「${gi.name}」に`,'育ちました'));if(sess.potions>0)msgs.push(nb(`栄養剤を${sess.potions}本`,'もらいました',`（いま${grow.potions}本）`));
   const lu=$('levelUp');lu.hidden=!msgs.length;lu.innerHTML=msgs.join('<br>');
+  {const Dk=deck(),ct=counts(),tot=sess.know+sess.no+sess.hmm,pct=Dk.items.length?Math.round(ct.know/Dk.items.length*100):0;let ck;
+  if(tot&&sess.know===tot)ck=['welcome','<b>全部「覚えた」！</b>完璧です。この勢いで次のセットもいってみよう。'];
+  else if(tot&&sess.no*2>=tot)ck=['think',`覚えていないカードが${sess.no}枚。<b>すぐにもう一度</b>めくると、ぐっと定着しやすいよ。`];
+  else if(sess.hmm)ck=['read',`納得いかないカードが${sess.hmm}枚。TOPの一覧から<b>辞書で確かめて</b>みよう。`];
+  else ck=['tablet',`${sess.know}枚を「覚えた」に記録したよ。${esc(Dk.name)}は いま <b>${pct}%</b>。`];
+  $('resCoach').innerHTML=coach(...ck);
+  const ps=[];
+  if(gi.L>L0)ps.push({img:'cheer',title:'レベルアップ！',msg:`学びの木が<b>「${gi.name}」</b>に育ちました。`+(sess.potions>0?`<br>栄養剤を${sess.potions}本もらいました。`:'')});
+  else if(sess.potions>0)ps.push({img:'welcome',title:'栄養剤をもらいました',msg:`いま<b>${grow.potions}本</b>。休んだ日のあとに使うと、その日を取り消せます。`});
+  if(Dk.items.length&&ct.know===Dk.items.length&&!load(KEY+'-done-'+Dk.id,0)){store(KEY+'-done-'+Dk.id,1);
+    ps.push({img:'welcome',title:`${Dk.name} コンプリート！`,msg:`${Dk.items.length}枚すべて「覚えた」になりました。おめでとう！<br>ときどきランダムで見直すと、忘れにくくなるよ。`});}
+  if(ps.length)setTimeout(()=>ps.forEach(pop),500);}
   const nl=sess.noList.filter(x=>status[x.id]==='no');
   $('resAgain').hidden=!nl.length;$('resAgainSub').textContent=`このセットの${nl.length}枚だけをめくり直す`;
   const box=$('resList');box.innerHTML='';
@@ -1254,7 +1364,9 @@ const LIST_TEXT={
       empty:'まだありません。<br>上にスワイプしたカードがここに集まります。',btn:'このカードだけでめくる'}};
 function openList(mode){listMode=mode;show('list');}
 function renderList(){
-  const T=LIST_TEXT[listMode];$('listTitle').textContent=T.title;$('listNote').innerHTML=T.note;$('listStudyLabel').textContent=T.btn;
+  const T=LIST_TEXT[listMode];$('listTitle').textContent=T.title;
+  $('listCoach').innerHTML=listMode==='hmm'?coach('read','意味がしっくりこないときは<b>「辞書」</b>で例文まで見てみよう。納得できたら「覚えた」へ。'):coach('think','覚えていないカードは、<b>声に出して</b>めくると覚えやすいよ。');
+$('listNote').innerHTML=T.note;$('listStudyLabel').textContent=T.btn;
   $('scr-list').dataset.mode=listMode;
   const items=deck().items.filter(x=>status[x.id]===listMode);const box=$('hmmList');box.innerHTML='';
   $('listStudy').hidden=!items.length;$('listSub').textContent=`${items.length}枚`;
