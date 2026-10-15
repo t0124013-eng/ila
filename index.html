@@ -1,0 +1,1511 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>メモリーポット スクール</title>
+<meta name="description" content="英単語・熟語をスワイプで仕分けて覚える暗記カード。続けるほど学びの木が育ちます。">
+<meta name="theme-color" content="#E9EDF2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141B24" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ポット スクール">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: phone mockup on a desk (wide) / full-bleed app (phone). Screens: TOP → 学習 → 結果, plus 納得いかない一覧 */
+:root{
+  --room:#CBD3DC; --desk:#E9EDF2; --desk-2:#DCE2E9; --card:#FFFFFF; --rule:#C9DAEC; --redline:#E07A6E;
+  --ink:#1D2F45; --ink-soft:#5B6B7E; --line:#CDD5DF; --bezel:#11171F;
+  --know:#2E8A57; --no:#CC4437; --hmm:#B97D0C;
+  --know-bg:#E2F2E8; --no-bg:#F8E3E0; --hmm-bg:#F6EBD3;
+  --f-word:"Literata", "Zen Kaku Gothic New", Georgia, "Hiragino Sans", serif;
+  --f-ja:"Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 1px 2px rgba(29,47,69,.10), 0 8px 22px rgba(29,47,69,.12);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --room:#0B1017; --desk:#141B24; --desk-2:#1D2732; --card:#232E3B; --rule:#2F3F52; --redline:#B85A50;
+  --ink:#E7EDF4; --ink-soft:#9AA8B8; --line:#344456; --bezel:#02050A;
+  --know:#5CC28A; --no:#F07467; --hmm:#E2AE45;
+  --know-bg:#1E3A2B; --no-bg:#432522; --hmm-bg:#3D3119;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --room:#0B1017; --desk:#141B24; --desk-2:#1D2732; --card:#232E3B; --rule:#2F3F52; --redline:#B85A50;
+  --ink:#E7EDF4; --ink-soft:#9AA8B8; --line:#344456; --bezel:#02050A;
+  --know:#5CC28A; --no:#F07467; --hmm:#E2AE45;
+  --know-bg:#1E3A2B; --no-bg:#432522; --hmm-bg:#3D3119;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px rgba(0,0,0,.45); color-scheme:dark}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--room);color:var(--ink);font-family:var(--f-ja);-webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:center;padding-inline:16px;padding-block:24px;box-sizing:border-box;min-height:100%}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---------- device frame ---------- */
+.phone{position:relative;width:390px;height:min(844px,calc(100dvh - 48px));min-height:660px;background:var(--bezel);border-radius:54px;padding:12px;box-sizing:border-box;
+  box-shadow:0 30px 60px rgba(0,0,0,.28),0 0 0 2px rgba(255,255,255,.06) inset}
+.device{position:relative;height:100%;background:var(--desk);border-radius:43px;overflow:hidden;display:flex;flex-direction:column}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:112px;height:32px;border-radius:20px;background:var(--bezel);z-index:20}
+.statusbar{height:50px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0;box-sizing:border-box;font-size:.92rem;font-weight:700;font-variant-numeric:tabular-nums}
+.sb-icons{display:flex;gap:6px;align-items:center}
+.sig{display:flex;gap:2px;align-items:flex-end;height:11px}.sig i{width:3px;background:var(--ink);border-radius:1px}
+.bat{width:24px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative;box-sizing:border-box;opacity:.9}
+.bat::after{content:"";position:absolute;inset:1.5px;right:5px;background:var(--ink);border-radius:1px}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.85;z-index:20;pointer-events:none}
+@media (max-width:520px){
+  body{padding:0;display:block}
+  .phone{width:100%;height:100%;min-height:0;border-radius:0;padding:0;box-shadow:none;background:var(--desk)}
+  .device{border-radius:0}
+  .island,.statusbar,.homebar{display:none}
+}
+
+/* ---------- screens ---------- */
+.screens{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;animation:enter .22s ease-out}
+@keyframes enter{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-inline:18px;padding-block:6px 34px;display:flex;flex-direction:column;gap:16px}
+.navbar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px 6px;min-height:44px;box-sizing:border-box}
+.navbtn{background:none;border:0;padding:8px 6px;font-size:.88rem;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;gap:4px}
+.navtitle{font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
+
+/* ---------- TOP ---------- */
+.hello{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-top:6px}
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;color:var(--ink-soft);text-transform:uppercase}
+.apptitle{margin:2px 0 0;font-size:1.65rem;font-weight:900;letter-spacing:.01em;line-height:1.2}
+.daystrip{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.streak,.today{border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.streak{background:var(--ink);color:var(--desk)}
+.today{background:var(--card);box-shadow:var(--shadow)}
+.s-label{font-size:.72rem;opacity:.8}
+.s-val{font-size:.8rem;font-variant-numeric:tabular-nums}
+.s-val b{font-family:var(--f-mono);font-weight:500;font-size:1.7rem;line-height:1;margin-right:3px}
+.s-dots{display:flex;gap:4px;margin-top:4px}
+.s-dots i{width:14px;height:5px;border-radius:3px;background:currentColor;opacity:.25}
+.s-dots i.on{opacity:1;background:var(--hmm)}
+.panel{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.prog-num{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.prog-num b{font-family:var(--f-mono);font-weight:500;font-size:2.2rem;line-height:1}
+.prog-num span{color:var(--ink-soft);font-size:.85rem}
+.prog-label{font-size:.78rem;color:var(--ink-soft);margin-bottom:6px}
+.bar{height:10px;border-radius:5px;background:var(--desk-2);display:flex;overflow:hidden;margin:12px 0 10px}
+.bar span{height:100%;transition:width .4s}
+.legend{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:.7rem;color:var(--ink-soft)}
+.legend div{display:flex;flex-direction:column;gap:2px}
+.legend b{font-family:var(--f-mono);font-weight:500;font-size:.95rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+
+.cta{border:0;border-radius:16px;background:var(--ink);color:var(--desk);padding:16px 18px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
+.cta strong{display:block;font-size:1.08rem;font-weight:700}
+.cta small{display:block;font-size:.75rem;opacity:.75;margin-top:3px}
+.cta .arrow{font-size:1.4rem;line-height:1}
+.cta:disabled{opacity:.45;cursor:default}
+.cta.mix{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
+.cta.mix small{color:var(--ink-soft);opacity:1}
+.mix-dots{display:flex;gap:10px;margin-top:6px;font-size:.7rem;font-variant-numeric:tabular-nums}
+.mix-dots span{display:flex;align-items:center;gap:4px}
+.mix-dots i{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:0;border-radius:14px;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:96px}
+.tile .t-label{font-size:.78rem;font-weight:700}
+.tile .t-num{font-family:var(--f-mono);font-size:1.7rem;line-height:1;font-variant-numeric:tabular-nums}
+.tile .t-act{font-size:.72rem;margin-top:auto;opacity:.85}
+.tile.no{background:var(--no-bg);color:var(--no)}
+.tile.hmm{background:var(--hmm-bg);color:var(--hmm)}
+.tile:disabled{opacity:.5;cursor:default}
+
+.sec-title{font-size:.78rem;font-weight:700;color:var(--ink-soft);letter-spacing:.06em;margin:0 0 -6px}
+.setting{display:flex;flex-direction:column;gap:8px}
+.setting+.setting{margin-top:14px}
+.setting-label{font-size:.78rem;color:var(--ink-soft);display:flex;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:.8rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink);font-weight:700}
+
+.howto{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto;gap:6px 10px;align-items:center;justify-items:center;padding:16px 12px}
+.mini-card{grid-column:2;grid-row:2;width:62px;height:82px;border-radius:7px;background:var(--card);border:1px solid var(--line);
+  background-image:repeating-linear-gradient(to bottom,transparent 0 11px,var(--rule) 11px 12px);background-position:0 18px;position:relative;
+  display:flex;align-items:center;justify-content:center;font-family:var(--f-word);font-weight:700;font-size:.8rem}
+.mini-card::before{content:"";position:absolute;left:0;right:0;top:16px;height:1px;background:var(--redline)}
+.dir{font-size:.75rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.dir span{font-size:1.1rem}
+.dir.up{grid-column:2;grid-row:1;color:var(--hmm)}
+.dir.left{grid-column:1;grid-row:2;color:var(--no)}
+.dir.right{grid-column:3;grid-row:2;color:var(--know)}
+.howto-note{font-size:.75rem;color:var(--ink-soft);text-align:center;margin:4px 0 0;line-height:1.7}
+.foot{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--ink-soft)}
+.linkbtn{background:none;border:0;color:var(--ink-soft);font-size:.78rem;cursor:pointer;padding:6px 2px;text-decoration:underline;text-underline-offset:3px}
+.danger{color:var(--no)}
+
+/* ---------- STUDY ---------- */
+.study-body{flex:1;display:flex;flex-direction:column;gap:12px;padding-inline:16px;padding-block:4px 30px;min-height:0}
+.sess-bar{height:4px;border-radius:2px;background:var(--desk-2);overflow:hidden;flex:none}
+.sess-bar span{display:block;height:100%;background:var(--ink-soft);transition:width .25s}
+.stage{flex:1;position:relative;min-height:240px}
+.card{position:absolute;inset:0;background:var(--card);border-radius:14px;box-shadow:var(--shadow);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;display:flex;flex-direction:column;overflow:hidden;
+  background-image:linear-gradient(var(--card) 0 0),repeating-linear-gradient(to bottom,transparent 0 35px,var(--rule) 35px 36px);
+  background-size:100% 60px,100% 100%;background-repeat:no-repeat,repeat;background-position:0 0,0 60px}
+.card.behind{transform:translateY(10px) scale(.95);opacity:.7;pointer-events:none}
+.card.dragging{cursor:grabbing}
+.card-head{height:60px;box-sizing:border-box;border-bottom:2px solid var(--redline);display:flex;align-items:flex-end;justify-content:space-between;padding:0 16px 8px;font-size:.75rem;color:var(--ink-soft)}
+.no{font-family:var(--f-mono);letter-spacing:.04em}
+.pos{border:1px solid var(--line);border-radius:4px;padding:2px 8px;background:var(--card)}
+.status-tag{font-size:.7rem;padding:2px 7px;border-radius:4px;margin-right:6px}
+.face{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px 18px 28px;text-align:center}
+.word{font-family:var(--f-word);font-weight:700;font-size:clamp(1.9rem,9vw,2.6rem);line-height:1.15;letter-spacing:-.01em;word-break:break-word}
+.meaning{font-size:1.2rem;font-weight:500;line-height:1.6;background:var(--card);padding:2px 10px;border-radius:4px}
+.hint{font-size:.78rem;color:var(--ink-soft)}
+.card:not(.revealed) .meaning{display:none}
+.card.revealed .hint{display:none}
+.card.revealed .meaning{animation:pop .2s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.timer{position:absolute;left:0;right:0;top:60px;height:6px;background:var(--desk-2)}
+.timer span{display:block;height:100%;width:100%;background:var(--ink);transform-origin:left;transition:transform .1s linear}
+.timer.low span{background:var(--no)}
+.clock{position:absolute;right:16px;top:74px;font-family:var(--f-mono);font-size:1.15rem;font-weight:500;background:var(--card);padding:0 4px;border-radius:4px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.clock.low{color:var(--no)}
+.clock.done{color:var(--know)}
+.heat{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:var(--no);opacity:calc(var(--heat,0) * .32);transition:opacity .12s linear;box-shadow:inset 0 0 0 calc(var(--heat,0) * 3px) var(--no)}
+.card .card-head,.card .face{position:relative;z-index:1}
+.card.revealed:not([data-timeout]) .heat{opacity:0;transition:opacity .35s ease-out}
+.card.revealed .timer span{opacity:.35}
+.timeout-note{font-size:.76rem;color:var(--no);font-weight:700}
+.stamp{position:absolute;top:110px;font-weight:700;font-size:1.15rem;padding:5px 12px;border:3px solid currentColor;border-radius:6px;opacity:0;pointer-events:none;background:var(--card)}
+.stamp.know{right:16px;color:var(--know);transform:rotate(8deg)}
+.stamp.sno{left:16px;color:var(--no);transform:rotate(-8deg)}
+.stamp.hmm{left:50%;top:auto;bottom:22px;color:var(--hmm);transform:translateX(-50%)}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;flex:none}
+.act{border:0;border-radius:12px;padding:11px 4px;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.act span{font-size:1.1rem;line-height:1}
+.act.no{background:var(--no-bg);color:var(--no)}
+.act.hmm{background:var(--hmm-bg);color:var(--hmm)}
+.act.know{background:var(--know-bg);color:var(--know)}
+.act:disabled{opacity:.4;cursor:default}
+
+/* ---------- RESULT / LIST ---------- */
+.res-head{text-align:center;padding-top:10px}
+.res-head .eyebrow{margin-bottom:4px}
+.res-head h2{margin:0;font-size:1.5rem;font-weight:900}
+.res-head p{margin:6px 0 0;color:var(--ink-soft);font-size:.85rem}
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rs{border-radius:12px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;gap:4px;font-size:.72rem;font-weight:700}
+.rs b{font-family:var(--f-mono);font-weight:500;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.rs.know{background:var(--know-bg);color:var(--know)}
+.rs.no{background:var(--no-bg);color:var(--no)}
+.rs.hmm{background:var(--hmm-bg);color:var(--hmm)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}
+.row:last-child{border-bottom:0}
+.row .w{font-family:var(--f-word);font-weight:700;font-size:1.02rem;word-break:break-word}
+.row .m{font-size:.8rem;color:var(--ink-soft);margin-top:2px}
+.row .btns{display:flex;gap:5px}
+.row a,.row button{font-size:.72rem;padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;cursor:pointer;white-space:nowrap}
+.panel.list{padding-block:4px}
+.empty{padding:28px 0;text-align:center;color:var(--ink-soft);font-size:.85rem;line-height:1.7}
+.btn2{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:14px;font-weight:700;cursor:pointer}
+.note{font-size:.78rem;color:var(--ink-soft);line-height:1.7;margin:0}
+/* ---------- deck switch / import ---------- */
+.deckbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 10px 4px 12px;font-size:.78rem;font-weight:700;cursor:pointer;max-width:100%}
+.deckbtn #deckName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.deckbtn-sub{font-weight:400;color:var(--ink-soft);font-size:.7rem;border-left:1px solid var(--line);padding-left:6px;margin-left:2px}
+.word.long{font-size:clamp(1.4rem,6vw,1.8rem);line-height:1.35}
+.word.xlong{font-size:1.15rem;line-height:1.6;text-align:left;font-weight:500}
+.meaning{white-space:pre-wrap}
+.btn2.add{display:flex;flex-direction:column;align-items:center;gap:2px;border-style:dashed}
+.btn2 small{font-weight:400;font-size:.72rem;color:var(--ink-soft)}
+.deck-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.deck-row:last-child{border-bottom:0}
+.deck-main{grid-row:1/3;border:0;background:none;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:0;min-width:0}
+.deck-name{font-weight:700;font-size:.95rem;overflow-wrap:anywhere}
+.deck-meta{font-size:.72rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.deck-bar{height:4px;border-radius:2px;background:var(--desk-2);overflow:hidden;margin-top:2px}
+.deck-bar span{display:block;height:100%;background:var(--know)}
+.deck-now{font-size:.7rem;font-weight:700;background:var(--ink);color:var(--card);border-radius:999px;padding:3px 9px;justify-self:end}
+.deck-del{font-size:.72rem;border:1px solid var(--line);background:var(--card);color:var(--no);border-radius:6px;padding:4px 8px;cursor:pointer;justify-self:end}
+.panel.imp{display:flex;flex-direction:column;gap:14px}
+.fmt{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:.75rem;text-align:center}
+.fmt div{padding:6px 4px;border-left:1px solid var(--line)}
+.fmt div:nth-child(3n+1){border-left:0}
+.fmt .fh{background:var(--desk-2);font-family:var(--f-mono);font-size:.68rem;color:var(--ink-soft)}
+.fmt small{display:block;font-size:.65rem;color:var(--ink-soft)}
+.field{display:flex;flex-direction:column;gap:6px;font-size:.75rem;color:var(--ink-soft)}
+.field input[type=text],.field textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--desk);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;box-sizing:border-box}
+.field textarea{resize:vertical;font-family:var(--f-mono);font-size:.78rem;line-height:1.6}
+.field input[type=file]{font-size:.78rem;color:var(--ink);max-width:100%}
+.check{display:flex;gap:8px;align-items:center;font-size:.8rem}
+.imp-ok{margin:0 0 8px;font-size:.82rem}.imp-ok b{font-family:var(--f-mono);font-weight:500;font-size:1.05rem}
+.imp-err{margin:0;font-size:.8rem;color:var(--no);line-height:1.6}
+.imp-table{display:grid;grid-template-columns:1fr 1.4fr .9fr;font-size:.75rem;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.imp-table div{padding:5px 7px;border-top:1px solid var(--line);overflow-wrap:anywhere;min-width:0}
+.imp-table .ih{border-top:0;background:var(--desk-2);color:var(--ink-soft);font-size:.68rem}
+.imp-more{margin:6px 0 0;font-size:.72rem;color:var(--ink-soft)}
+#impSample{align-self:center}
+/* ---------- subject picker ---------- */
+.subj-wrap{margin-inline:-18px}
+.subj-row{display:flex;gap:10px;overflow-x:auto;padding:2px 18px 6px;scroll-snap-type:x proximity;scrollbar-width:none}
+.subj-row::-webkit-scrollbar{display:none}
+.subj{flex:0 0 118px;scroll-snap-align:start;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0}
+.subj[aria-pressed="true"]{border-color:var(--ink);box-shadow:var(--shadow)}
+.subj-mark{width:30px;height:30px;border-radius:8px;background:var(--desk-2);display:flex;align-items:center;justify-content:center;font-family:var(--f-word);font-weight:700;font-size:1rem;margin-bottom:4px}
+.subj[aria-pressed="true"] .subj-mark{background:var(--ink);color:var(--card)}
+.subj-sub{font-size:.66rem;color:var(--ink-soft);letter-spacing:.04em}
+.subj-name{font-weight:700;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subj-meta{font-size:.68rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.subj-bar{height:3px;border-radius:2px;background:var(--desk-2);overflow:hidden;margin-top:4px}
+.subj-bar span{display:block;height:100%;background:var(--know)}
+.badge{display:inline-block;margin-left:5px;font-size:.6rem;font-weight:700;letter-spacing:0;padding:1px 5px;border-radius:4px;background:var(--hmm-bg);color:var(--hmm);vertical-align:1px}
+.subj.add{border-style:dashed;background:none;justify-content:center}
+.subj.add .subj-mark{background:none;border:1px dashed var(--line)}
+.card.formula .word{font-family:var(--f-ja);font-weight:700;font-size:1.3rem;line-height:1.5;text-align:center}
+.card.formula .meaning{font-family:"Cambria Math","STIX Two Math",var(--f-word);font-size:1.35rem;font-weight:500;letter-spacing:.02em}
+/* ---------- 学びの木 ---------- */
+:root{--wither:#C9A84A;--dead:#8C6A48;--leaf:#4E9A5B;--leaf-2:#3B7D49;--leaf-3:#7CBF6E;--trunk:#8A5A3B;--soil:#C9B49A;--soil-2:#B39B7E;--bloom:#EE8FA8;--bloom-c:#F6D36B;--fruit:#E2683C;--sky:#E6F0F6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--wither:#C8A750;--dead:#9A7656;--leaf:#5DB06C;--leaf-2:#468E55;--leaf-3:#8ACF7C;--trunk:#A0714F;--soil:#5A4A3A;--soil-2:#4A3C2F;--bloom:#F2A2B8;--bloom-c:#F2D27A;--fruit:#F07E50;--sky:#1A2633}}
+:root[data-theme="dark"]{--wither:#C8A750;--dead:#9A7656;--leaf:#5DB06C;--leaf-2:#468E55;--leaf-3:#8ACF7C;--trunk:#A0714F;--soil:#5A4A3A;--soil-2:#4A3C2F;--bloom:#F2A2B8;--bloom-c:#F2D27A;--fruit:#F07E50;--sky:#1A2633}
+.garden{display:grid;grid-template-columns:116px minmax(0,1fr);gap:14px;align-items:center;border:0;text-align:left;cursor:pointer;width:100%}
+.plant{width:116px;height:124px;border-radius:12px;background:var(--sky);overflow:hidden}
+.plant svg{display:block;width:100%;height:100%}
+.plant.small{width:88px;height:94px}
+.g-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.g-stage{display:flex;align-items:baseline;gap:8px;font-weight:900;font-size:1.25rem}
+.g-lv{font-family:var(--f-mono);font-weight:500;font-size:.8rem;color:var(--leaf-2);background:color-mix(in srgb,var(--leaf) 16%,transparent);padding:1px 7px;border-radius:999px}
+.g-bar{height:8px;border-radius:4px;background:var(--desk-2);overflow:hidden}
+.g-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--leaf-3),var(--leaf));border-radius:4px;transition:width .6s ease-out}
+.g-next{font-size:.75rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.g-meta{font-size:.7rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.plant .sway{transform-origin:60px 112px;animation:sway 5s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+.res-grow{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center}
+.xp-gain{font-size:.85rem;color:var(--ink-soft)}
+.xp-gain b{font-family:var(--f-mono);font-weight:500;font-size:1.6rem;color:var(--leaf-2)}
+.levelup{font-weight:900;font-size:.95rem;color:var(--leaf-2);animation:pop .4s ease-out}
+.xp-rules .rule{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.82rem}
+.xp-rules .rule b{font-family:var(--f-mono);font-weight:500;color:var(--leaf-2)}
+.stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.st{background:var(--card);border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.72rem;text-align:center;box-shadow:var(--shadow)}
+.st .plant{width:100%;height:auto;aspect-ratio:116/124}
+.st b{font-size:.8rem}
+.st small{color:var(--ink-soft);font-family:var(--f-mono);font-size:.65rem}
+.st.locked .plant{filter:grayscale(1) brightness(.6) contrast(.8);opacity:.45}
+.st.locked b{color:var(--ink-soft)}
+.st.now{outline:2px solid var(--leaf);outline-offset:-2px}
+.plant svg{--lf1:var(--leaf);--lf2:var(--leaf-2);--lf3:var(--leaf-3)}
+.plant svg.w1{--lf1:color-mix(in srgb,var(--leaf) 62%,var(--wither));--lf2:color-mix(in srgb,var(--leaf-2) 62%,var(--wither));--lf3:color-mix(in srgb,var(--leaf-3) 55%,var(--wither))}
+.plant svg.w2{--lf1:color-mix(in srgb,var(--wither) 70%,var(--leaf));--lf2:color-mix(in srgb,var(--wither) 55%,var(--dead));--lf3:color-mix(in srgb,var(--wither) 80%,var(--leaf-3))}
+.plant svg.w3{--lf1:color-mix(in srgb,var(--dead) 75%,var(--wither));--lf2:var(--dead);--lf3:color-mix(in srgb,var(--dead) 55%,var(--wither))}
+.plant svg.w2 .fr{display:none}.plant svg.w2 .bl{opacity:.45}
+.plant svg.w3 .fr,.plant svg.w3 .bl{display:none}
+.plant svg.w2 .sway{animation:none;transform:rotate(-2deg) scaleY(.97)}
+.plant svg.w3 .sway{animation:none;transform:skewX(-5deg) scaleY(.92)}
+.plant svg.w3 .drop{animation:drop 4s ease-in infinite;opacity:0}
+@keyframes drop{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate(8px,60px) rotate(160deg)}}
+.g-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.health{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:999px}
+.health.h0{background:color-mix(in srgb,var(--leaf) 16%,transparent);color:var(--leaf-2)}
+.health.h1{background:var(--hmm-bg);color:var(--hmm)}
+.health.h2,.health.h3{background:var(--no-bg);color:var(--no)}
+.g-warn{font-size:.72rem;line-height:1.55;color:var(--no);font-weight:700}
+.g-warn.soft{color:var(--hmm)}
+.rule.minus b{color:var(--no)!important}
+.potion{display:inline-flex;align-items:center;gap:3px;font-size:.66rem;font-weight:700;padding:1px 7px 1px 4px;border-radius:999px;background:color-mix(in srgb,var(--leaf-3) 22%,transparent);color:var(--leaf-2)}
+.bottle{width:11px;height:14px}
+.rescue{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:-6px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--leaf-3) 18%,var(--card));border:1.5px solid var(--leaf);font-size:.78rem;line-height:1.5}
+.rescue-ico{width:22px;height:28px;background:no-repeat center/contain}
+.rescue button{border:0;border-radius:999px;background:var(--leaf-2);color:#fff;font-weight:700;font-size:.78rem;padding:8px 12px;cursor:pointer;white-space:nowrap}
+/* ---------- TOP redesign ---------- */
+:root{--c-p1:#9B3F86;--c-en:#3F6FD6;--c-hi:#D2563A;--c-ma:#178F80;--c-my:#7A5BC4;--c-u5:#B7791F;--c-u6:#2F8F4E;--c-u7:#5A6B85;
+  --tod-morning-a:#FFD9B8;--tod-morning-b:#CFE6F2;--tod-day-a:#9FD2F2;--tod-day-b:#E4F3FA;--tod-evening-a:#F6A877;--tod-evening-b:#F9D9B5;--tod-night-a:#1F2B4D;--tod-night-b:#3A4A72;
+  --scene-ink:#1D2F45;--scene-ink-n:#EEF2FA}
+.top-scroll{gap:14px}
+.scroll>*{flex-shrink:0}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;padding-top:4px}
+.brand .apptitle{font-size:1.45rem}
+.pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:baseline;gap:3px;background:var(--card);border-radius:999px;padding:6px 11px;font-size:.7rem;color:var(--ink-soft);box-shadow:var(--shadow);white-space:nowrap}
+.pill b{font-family:var(--f-mono);font-weight:500;font-size:1.05rem;color:var(--ink)}
+.pill svg{width:13px;height:16px;align-self:center;margin-right:1px}
+.pill.fire b{color:var(--fruit)}
+
+.scene{position:relative;border-radius:24px;overflow:hidden;padding:14px 16px 14px;display:flex;flex-direction:column;
+  --sa:var(--tod-day-a);--sb:var(--tod-day-b);--si:var(--scene-ink);
+  background:linear-gradient(180deg,var(--sa) 0%,var(--sb) 78%);color:var(--si);box-shadow:var(--shadow)}
+.scene[data-tod="morning"]{--sa:var(--tod-morning-a);--sb:var(--tod-morning-b)}
+.scene[data-tod="evening"]{--sa:var(--tod-evening-a);--sb:var(--tod-evening-b)}
+.scene[data-tod="night"]{--sa:var(--tod-night-a);--sb:var(--tod-night-b);--si:var(--scene-ink-n)}
+.sky-deco{position:absolute;inset:0;pointer-events:none}
+.sun{position:absolute;right:22px;top:58px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#FFF6C8 0 45%,#FFE07A 46% 100%);box-shadow:0 0 30px 10px rgba(255,224,122,.45)}
+.scene[data-tod="evening"] .sun{background:radial-gradient(circle,#FFE3B0 0 45%,#FF9A5C 46%);box-shadow:0 0 34px 12px rgba(255,140,80,.4);top:96px}
+.scene[data-tod="night"] .sun{background:radial-gradient(circle at 35% 35%,#FDFBF0 0 60%,#E8E2C8 61%);box-shadow:0 0 24px 6px rgba(240,236,210,.25);width:34px;height:34px}
+.stars{position:absolute;inset:0;opacity:0}
+.scene[data-tod="night"] .stars{opacity:1;background-image:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1.2px 1.2px at 40% 18%,#fff,transparent),radial-gradient(1.4px 1.4px at 70% 26%,#fff,transparent),radial-gradient(1px 1px at 12% 52%,#fff,transparent),radial-gradient(1.2px 1.2px at 88% 48%,#fff,transparent),radial-gradient(1px 1px at 58% 40%,#fff,transparent)}
+.cloud{position:absolute;height:16px;border-radius:999px;background:rgba(255,255,255,.75);animation:drift 38s linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud::before{width:22px;height:22px;left:10px;top:-10px}.cloud::after{width:16px;height:16px;left:26px;top:-6px}
+.cloud.c1{width:58px;top:120px;left:-70px}
+.cloud.c2{width:44px;top:170px;left:-70px;animation-duration:52s;animation-delay:-20s;opacity:.7}
+.scene[data-tod="night"] .cloud{background:rgba(255,255,255,.12)}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(480px)}}
+.scene-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;z-index:2}
+.scene-title{display:flex;flex-direction:column;gap:6px}
+.scene .g-stage{font-size:1.35rem}
+.scene .g-lv{background:rgba(255,255,255,.7);color:var(--leaf-2)}
+.scene[data-tod="night"] .g-lv{background:rgba(255,255,255,.14);color:var(--leaf-3)}
+.scene .health.h0{background:rgba(255,255,255,.7)}
+.scene-link{border:0;background:rgba(255,255,255,.55);color:inherit;font-size:.72rem;font-weight:700;border-radius:999px;padding:6px 11px;cursor:pointer;backdrop-filter:blur(4px)}
+.scene[data-tod="night"] .scene-link{background:rgba(255,255,255,.14)}
+.tree-btn{position:relative;z-index:1;border:0;background:none;padding:0;margin:-6px auto -4px;cursor:pointer;display:block;-webkit-tap-highlight-color:transparent}
+.plant.hero{display:block;width:232px;height:248px;background:none;border-radius:0}
+.tree-btn:active .plant.hero{transform:scale(.97)}
+.tree-btn.boing .plant.hero{animation:boing .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes boing{0%{transform:scale(1)}25%{transform:scale(1.07,.93)}50%{transform:scale(.95,1.05)}75%{transform:scale(1.02,.98)}100%{transform:scale(1)}}
+.spark{position:absolute;z-index:3;pointer-events:none;width:9px;height:5px;border-radius:50%;background:var(--leaf-3);animation:spark 1.1s ease-out forwards}
+.spark.star{width:8px;height:8px;border-radius:0;background:var(--bloom-c);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+@keyframes spark{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-70px) rotate(220deg)}}
+.bubble{position:absolute;z-index:4;left:50%;top:78px;transform:translateX(-50%);max-width:78%;background:var(--card);color:var(--ink);font-size:.8rem;font-weight:700;line-height:1.5;padding:8px 12px;border-radius:14px;box-shadow:var(--shadow);text-align:center;animation:pop .25s ease-out}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:var(--card);transform:translateX(-50%) rotate(45deg)}
+.scene-foot{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.55);border-radius:14px;padding:9px 12px;backdrop-filter:blur(4px)}
+.scene[data-tod="night"] .scene-foot{background:rgba(255,255,255,.1)}
+.scene .g-next{color:inherit;opacity:.85}
+.scene .g-bar{background:rgba(29,47,69,.12)}
+.g-warn{padding:0 4px}
+.top-scroll .rescue{margin-top:0}
+
+.subj-wrap{margin-top:2px}
+.subj{--c:var(--c-my)}
+.subj[aria-pressed="true"]{border-color:var(--c);box-shadow:0 6px 18px color-mix(in srgb,var(--c) 28%,transparent)}
+.subj[aria-pressed="true"] .subj-mark{background:var(--c);color:#fff}
+.subj .subj-mark{color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--card))}
+.subj-bar span{background:var(--c)}
+
+.deck-hero{display:flex;flex-direction:column;gap:10px;--deck:var(--c-en)}
+.deck-stack{position:relative;height:186px;border:0;background:none;padding:0;width:100%;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.deck-stack:disabled{cursor:default}
+.ds-card{position:absolute;inset:0;border-radius:18px;background:var(--card);box-shadow:var(--shadow)}
+.ds3{transform:rotate(-4deg) translate(-4px,10px) scale(.94);background:color-mix(in srgb,var(--deck) 20%,var(--card))}
+.ds2{transform:rotate(3deg) translate(4px,5px) scale(.97);background:color-mix(in srgb,var(--deck) 10%,var(--card))}
+.ds1{display:flex;flex-direction:column;padding:12px 18px 14px;overflow:hidden;text-align:center;
+  background-image:linear-gradient(var(--card) 0 0),repeating-linear-gradient(to bottom,transparent 0 29px,var(--rule) 29px 30px);
+  background-size:100% 40px,100% 100%;background-repeat:no-repeat,repeat;background-position:0 0,0 40px;
+  border-top:6px solid var(--deck);animation:nudge 4.5s ease-in-out 1.2s infinite}
+.deck-stack.dragging .ds1,.deck-stack:disabled .ds1{animation:none}
+@keyframes nudge{0%,78%,100%{transform:none}84%{transform:translateX(14px) rotate(2.5deg)}90%{transform:translateX(-2px)}}
+.ds-head{display:flex;justify-content:space-between;align-items:center;height:22px;border-bottom:2px solid var(--redline);margin:0 -18px;padding:0 18px 6px}
+.ds-tag{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.14em;color:var(--deck);font-weight:500}
+.ds-cat{font-size:.68rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:4px;padding:1px 7px;background:var(--card)}
+.ds-cat:empty{display:none}
+.ds-word{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--f-word);font-weight:700;font-size:clamp(1.6rem,8vw,2.2rem);line-height:1.25;color:var(--ink);overflow-wrap:anywhere;padding:0 4px}
+.ds-word.long{font-size:1.1rem;font-family:var(--f-ja);line-height:1.5}
+.ds-hint{align-self:flex-end;font-size:.72rem;font-weight:700;color:var(--deck);background:var(--card);padding:2px 6px;border-radius:6px}
+.ds-hint i{font-style:normal;display:inline-block;animation:arrow 1.4s ease-in-out infinite}
+@keyframes arrow{0%,100%{transform:none}50%{transform:translateX(4px)}}
+.deck-cap{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 4px}
+.deck-cap strong{font-size:.95rem}
+.deck-cap small{font-size:.72rem;color:var(--ink-soft);text-align:right}
+
+.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.q{border:0;border-radius:16px;padding:12px 10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:92px;transition:transform .12s}
+.q:active{transform:scale(.96)}
+.q:disabled{opacity:.45;cursor:default}
+.q strong{font-size:.78rem}
+.q small{font-size:.66rem;opacity:.8;line-height:1.4}
+.q-num,.q-ico{font-family:var(--f-mono);font-size:1.5rem;line-height:1.1;margin-bottom:auto}
+.q.mix{background:var(--ink);color:var(--card)}
+.q.no{background:var(--no-bg);color:var(--no)}
+.q.hmm{background:var(--hmm-bg);color:var(--hmm)}
+.prog-label #progDeck{font-weight:700;color:var(--ink)}
+.panel .g-meta{margin-top:10px}
+.settings{padding:0}
+.settings summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;font-weight:700;font-size:.88rem}
+.settings summary::-webkit-details-marker{display:none}
+.settings summary::after{content:"›";font-size:1.2rem;color:var(--ink-soft);transition:transform .2s}
+.settings[open] summary::after{transform:rotate(90deg)}
+.set-sum{margin-left:auto;font-weight:400;font-size:.72rem;color:var(--ink-soft);text-align:right}
+.set-body{padding:0 16px 16px}
+.settings .howto{padding-top:0}
+.settings .howto-note{padding:0 16px 16px}
+/* card back */
+.ds1.back{background:var(--deck);background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.22) 1.2px,transparent 1.4px);background-size:14px 14px;background-position:0 0;border:6px solid var(--card);border-radius:20px;color:#fff;padding:10px 14px 12px}
+.ds1.back .ds-head{border-bottom:0;margin:0;padding:0}
+.ds1.back .ds-tag{color:#fff;font-family:var(--f-ja);font-weight:700;font-size:.78rem;letter-spacing:.04em;background:rgba(0,0,0,.18);padding:3px 10px;border-radius:999px}
+.ds1.back .ds-cat{background:rgba(255,255,255,.92);border:0;color:var(--ink)}
+.ds-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.ds-count{font-size:.95rem;font-weight:700;opacity:.95}
+.ds-count b{font-family:var(--f-mono);font-weight:500;font-size:2.6rem;line-height:1;margin-right:4px}
+.ds-play{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--deck);font-weight:900;font-size:1rem;padding:10px 20px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.18);animation:pulse 2.2s ease-in-out infinite}
+.ds-play svg{width:12px;height:14px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.deck-stack:disabled .ds-play{animation:none;color:var(--ink-soft);font-weight:700}
+.ds1.back .ds-hint{background:none;color:#fff;opacity:.9}
+.deck-stack:disabled .ds1.back{filter:grayscale(.7);opacity:.7}
+/* ---------- HOME（タイトル） ---------- */
+:root{--pot:#C8754A;--pot-2:#A65E39}
+.scene.home{position:absolute;inset:0;border-radius:0;box-shadow:none;padding:28px 24px 34px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;text-align:center;background:linear-gradient(180deg,var(--sa) 0%,var(--sb) 70%)}
+.home .sun{top:30%;right:9%}
+.home-head{position:relative;z-index:2;padding-top:18px}
+.home-eyebrow{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.32em;opacity:.7}
+.home-title{margin:6px 0 0;font-size:2.35rem;font-weight:900;letter-spacing:.04em;line-height:1.15;text-wrap:balance}
+.home-plant{position:relative;z-index:1;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.plant.pot{display:block;width:min(64vw,236px);height:auto;aspect-ratio:120/162;max-height:40vh;background:none;border-radius:0}
+.plant.pot svg{width:100%;height:100%}
+.home-plant.boing .plant.pot{animation:boing .7s cubic-bezier(.3,1.6,.5,1)}
+.home-state{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px}
+.home-stage{display:flex;align-items:baseline;gap:8px;font-weight:900;font-size:1.15rem;flex-wrap:wrap;justify-content:center}
+.home .g-lv{background:rgba(255,255,255,.7);color:var(--leaf-2)}
+.home[data-tod="night"] .g-lv{background:rgba(255,255,255,.14);color:var(--leaf-3)}
+.home-streak{display:inline-flex;align-items:baseline;gap:6px;background:rgba(255,255,255,.6);padding:8px 18px;border-radius:999px;font-weight:700;font-size:.9rem;backdrop-filter:blur(4px)}
+.home[data-tod="night"] .home-streak{background:rgba(255,255,255,.12)}
+.home-streak svg{width:16px;height:20px;align-self:center}
+.home-streak b{font-family:var(--f-mono);font-weight:500;font-size:1.9rem;line-height:1;color:var(--fruit)}
+.home-start{position:relative;z-index:2;width:min(100%,300px);border:0;border-radius:999px;background:var(--ink);color:var(--desk);font-weight:900;font-size:1.25rem;letter-spacing:.2em;padding:18px 24px;cursor:pointer;box-shadow:0 10px 26px rgba(29,47,69,.3);animation:pulse 2.4s ease-in-out infinite}
+.home[data-tod="night"] .home-start{background:#fff;color:#1D2F45}
+.home-start:active{transform:scale(.97)}
+@media (max-height:700px){.home-title{font-size:1.9rem}.plant.pot{max-height:34vh}}
+/* ---------- 日本語の改行 ---------- */
+body{word-break:auto-phrase;line-break:strict}
+.nb{white-space:nowrap}
+.scene-link{white-space:nowrap}
+.deck-cap{flex-wrap:wrap}
+.deck-stack{margin-bottom:12px}
+.deck-cap{justify-content:center;align-items:baseline;gap:6px;padding:0}
+.deck-cap strong{font-size:.82rem;color:var(--ink-soft);font-weight:700}
+.deck-cap small{margin-left:0!important;text-align:center}
+.dot-sep{color:var(--ink-soft);font-size:.72rem}
+.deck-hero{gap:14px}
+.deck-cap strong,.deck-cap small{white-space:nowrap}
+.deck-cap small{margin-left:auto}
+.q{padding:12px 8px}
+.q strong{white-space:nowrap;font-size:.74rem}
+.note,.howto-note,.g-warn,#rescueText,.levelup,.g-next,.empty,.res-head p{text-wrap-style:pretty}
+.topbar .brand{min-width:0}
+.topbar .apptitle{white-space:nowrap;font-size:1.3rem}
+.q small{white-space:nowrap}
+.rule .sub{display:block;font-size:.72rem;color:var(--ink-soft)}
+/* ---------- 答えを見てから仕分ける ---------- */
+.actions-wrap{flex:none;min-height:72px;display:flex;flex-direction:column;justify-content:flex-end}
+.reveal-btn{width:100%;border:0;border-radius:14px;background:var(--ink);color:var(--card);font-weight:900;font-size:1rem;letter-spacing:.06em;padding:18px;cursor:pointer;box-shadow:var(--shadow)}
+.sort-guide{display:flex;flex-direction:column;gap:6px;animation:pop .25s ease-out}
+.guide-text{margin:0;text-align:center;font-size:.74rem;font-weight:700;color:var(--ink-soft)}
+.shake{animation:shake .38s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.swipe-hint{display:none}
+.card.revealed .swipe-hint{display:flex;justify-content:space-between;gap:6px;width:100%;font-size:.7rem;font-weight:700;margin-top:8px;animation:pop .3s ease-out}
+.sh-no{color:var(--no)}.sh-hmm{color:var(--hmm)}.sh-know{color:var(--know)}
+.swipe-hint span{background:var(--card);padding:2px 6px;border-radius:6px;white-space:nowrap}
+.trial-badge{display:inline-block;margin-top:6px;font-size:.72rem;font-weight:900;letter-spacing:.12em;padding:3px 12px;border-radius:999px;background:var(--fruit);color:#fff}
+/* ---------- リセット ---------- */
+.prog-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.prog-foot .g-meta{margin-top:0}
+.reset-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);font-size:.72rem;font-weight:700;border-radius:999px;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.reset-btn svg{width:13px;height:13px}
+.sheet-back{position:absolute;inset:0;z-index:30;background:rgba(10,16,24,.45);display:flex;align-items:flex-end}
+.sheet{width:100%;background:var(--card);border-radius:22px 22px 0 0;padding:10px 18px 30px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:sheetUp .25s ease-out}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet-grip{width:40px;height:5px;border-radius:3px;background:var(--line);align-self:center}
+.sheet-title{margin:4px 0 0;font-size:1.15rem;font-weight:900}
+.rs-opts{display:flex;flex-direction:column;gap:8px}
+.rs-opt{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:11px 12px;cursor:pointer}
+.rs-opt[aria-checked="true"]{border-color:var(--ink);background:var(--desk)}
+.rs-opt.all[aria-checked="true"]{border-color:var(--no)}
+.rs-opt:disabled{opacity:.4;cursor:default}
+.rs-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}
+.rs-opt[aria-checked="true"] .rs-dot{border:5px solid var(--ink)}
+.rs-opt.all[aria-checked="true"] .rs-dot{border-color:var(--no)}
+.rs-text b{display:block;font-size:.86rem}
+.rs-text small{display:block;font-size:.7rem;color:var(--ink-soft)}
+.rs-n{font-family:var(--f-mono);font-size:.9rem;font-variant-numeric:tabular-nums}
+.rs-keep{margin:0;font-size:.74rem;color:var(--know);font-weight:700}
+.rs-actions{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+.rs-go{border:0;border-radius:14px;background:var(--ink);color:var(--card);font-weight:900;font-size:.9rem;padding:14px;cursor:pointer}
+.rs-go.all{background:var(--no);color:#fff}
+.rs-go:disabled{opacity:.4;cursor:default}
+.toast{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:40;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:700;padding:10px 18px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;animation:pop .25s ease-out}
+#scr-list[data-mode="no"] #listStudy{background:var(--no);color:#fff}
+#scr-list[data-mode="hmm"] #listStudy{background:var(--hmm);color:#fff}
+.mix-opt{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:16px;padding:14px;cursor:pointer}
+.mix-opt:active{transform:scale(.98)}
+.mix-opt:disabled{opacity:.4;cursor:default}
+.mix-ico{width:40px;height:40px;border-radius:12px;background:var(--mc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.mix-n{font-family:var(--f-mono);font-size:1rem;font-weight:500;color:var(--mc)}
+.deck-acts{grid-row:1/3;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.deck-edit{font-size:.72rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:4px 8px;cursor:pointer;white-space:nowrap}
+.deck-del{white-space:nowrap}
+.danger-btn{font-size:.72rem;padding:5px 10px;border-radius:6px;border:1px solid var(--no)!important;background:var(--card);color:var(--no)!important;cursor:pointer}
+.toast{display:flex;align-items:center;gap:12px}
+.toast-act{border:0;background:none;color:var(--hmm);font:inherit;font-weight:900;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+.deck-org{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.deck-org svg{width:13px;height:13px}
+.deck-row.current{background:color-mix(in srgb,var(--desk) 60%,transparent);border-radius:10px;padding-inline:8px;margin-inline:-8px}
+.mix-opt.danger{border-color:color-mix(in srgb,var(--no) 40%,var(--line))}
+.mix-opt.danger b{color:var(--no)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+/* ---------- standalone page base ---------- */
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-size:14px;line-height:1.5;overscroll-behavior:none}
+img{max-width:100%}
+@media (max-width:520px){
+  .device{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+}
+.install{display:flex;flex-direction:column;gap:12px}
+.inst-head{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center}
+.inst-head img{border-radius:10px}
+.inst-head strong{display:block;font-size:.92rem}
+.inst-head small{display:block;font-size:.72rem;color:var(--ink-soft)}
+.inst-steps{margin:0;padding-left:1.4em;font-size:.82rem;line-height:1.8;color:var(--ink)}
+.inst-steps b{color:var(--c-en)}
+.inst-sub{font-size:.72rem;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="device">
+    <div class="island" aria-hidden="true"></div>
+    <div class="statusbar" aria-hidden="true"><span id="sbTime">9:41</span><span class="sb-icons"><span class="sig"><i style="height:4px"></i><i style="height:6px"></i><i style="height:8px"></i><i style="height:11px"></i></span><span class="bat"></span></span></div>
+    <div class="screens">
+
+      <!-- HOME（タイトル） -->
+      <section class="screen scene home" id="scr-home" data-tod="day">
+        <div class="sky-deco" aria-hidden="true"><span class="sun"></span><span class="cloud c1"></span><span class="cloud c2"></span><span class="stars"></span></div>
+        <div class="home-head">
+          <div class="home-eyebrow">MEMORY POT</div><div class="trial-badge">体験版</div>
+          <h1 class="home-title">メモリーポット</h1>
+        </div>
+        <button class="home-plant" id="homePlantBtn" type="button" aria-label="鉢の木にふれる"><span class="plant pot" id="homePlant" aria-hidden="true"></span></button>
+        <div class="home-state">
+          <div class="home-stage"><span class="g-lv" id="homeLv">Lv.1</span><span id="homeName">種</span><span class="health h0" id="homeHealth" hidden></span></div>
+          <div class="home-streak"><svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1c.6 3-2.6 4.6-2.6 8 0 1.4.8 2.4 1.6 2.6C6.5 10 8 8.6 9.2 7.4c1 2 3.8 3.6 3.8 6.6A5 5 0 0 1 3 14c0-5 5-7 5-13z" fill="var(--fruit)"/><path d="M8 19a2.8 2.8 0 0 1-2.8-2.8c0-2 2-2.8 2.8-4.6.8 1.8 2.8 2.6 2.8 4.6A2.8 2.8 0 0 1 8 19z" fill="var(--bloom-c)"/></svg><b id="homeStreak">1</b><span>日 連続</span></div>
+        </div>
+        <button class="home-start" id="homeStart" type="button">スタート</button>
+      </section>
+
+      <!-- TOP -->
+      <section class="screen" id="scr-top" hidden>
+        <div class="scroll top-scroll">
+          <header class="topbar">
+            <div class="brand"><span class="eyebrow" id="greet">こんにちは</span><h1 class="apptitle">メモリーポット</h1></div>
+            <div class="pills">
+              <span class="pill fire" title="連続ログイン"><svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1c.6 3-2.6 4.6-2.6 8 0 1.4.8 2.4 1.6 2.6C6.5 10 8 8.6 9.2 7.4c1 2 3.8 3.6 3.8 6.6A5 5 0 0 1 3 14c0-5 5-7 5-13z" fill="var(--fruit)"/><path d="M8 19a2.8 2.8 0 0 1-2.8-2.8c0-2 2-2.8 2.8-4.6.8 1.8 2.8 2.6 2.8 4.6A2.8 2.8 0 0 1 8 19z" fill="var(--bloom-c)"/></svg><b id="streakN">1</b><span>日連続</span></span>
+              <span class="pill"><b id="todayN">0</b><span>枚 今日</span></span>
+            </div>
+            <span id="streakDots" hidden></span>
+          </header>
+
+          <div class="scene" id="scene" data-tod="day">
+            <div class="sky-deco" aria-hidden="true"><span class="sun"></span><span class="cloud c1"></span><span class="cloud c2"></span><span class="stars"></span></div>
+            <div class="scene-top">
+              <div class="scene-title">
+                <div class="g-stage"><span class="g-lv" id="gLv">Lv.1</span><span id="gName">種</span></div>
+                <div class="g-top"><span class="health h0" id="gHealth">元気</span><span class="potion" id="gPotion" hidden></span></div>
+              </div>
+              <button class="scene-link" id="garden" type="button">成長の記録 ›</button>
+            </div>
+            <button class="tree-btn" id="treeBtn" type="button" aria-label="学びの木にふれる"><span class="plant hero" id="plant" aria-hidden="true"></span></button>
+            <div class="bubble" id="bubble" hidden></div>
+            <div class="scene-foot">
+              <div class="g-bar"><span id="gBar"></span></div>
+              <div class="g-next" id="gNext"></div>
+            </div>
+          </div>
+          <div class="g-warn" id="gWarn" hidden></div>
+          <div class="rescue" id="rescue" hidden><span class="rescue-ico" aria-hidden="true"></span><span id="rescueText"></span><button type="button" id="rescueBtn">使う</button></div>
+
+          <div class="subj-wrap"><div class="subj-row" id="subjRow" role="group" aria-label="教科を選ぶ"></div></div>
+
+          <div class="deck-hero">
+            <button class="deck-stack" id="ctaNew" type="button" aria-label="未学習のカードをめくる">
+              <span class="ds-card ds3" aria-hidden="true"></span><span class="ds-card ds2" aria-hidden="true"></span>
+              <span class="ds-card ds1 back" id="ds1">
+                <span class="ds-head"><span class="ds-tag" id="dsDeck">Unit1-3</span><span class="ds-cat" id="dsCat"></span></span>
+                <span class="ds-center">
+                  <span class="ds-count"><b id="dsWord">20</b>枚</span>
+                  <span class="ds-play" id="dsPlay"><svg viewBox="0 0 12 14" aria-hidden="true"><path d="M1 1.2v11.6a.8.8 0 0 0 1.2.7l9.4-5.8a.8.8 0 0 0 0-1.4L2.2.5A.8.8 0 0 0 1 1.2z" fill="currentColor"/></svg>タップしてスタート</span>
+                </span>
+                <span class="ds-hint" id="dsHint">右にスワイプしても始まります <i aria-hidden="true">→</i></span>
+              </span>
+            </button>
+            <div class="deck-cap"><strong id="ctaTitle">未学習のカードをめくる</strong><span class="dot-sep" aria-hidden="true">・</span><small id="ctaSub"></small></div>
+          </div>
+
+          <div class="quick">
+            <button class="q mix" id="ctaMix" type="button"><span class="q-ico" aria-hidden="true">⤨</span><strong>ランダム</strong><small id="mixSub"></small><span id="mixDots" hidden></span></button>
+            <button class="q no" id="tileNo" type="button"><span class="q-num" id="tNo">0</span><strong>覚えていない</strong><small>一覧を見る</small></button>
+            <button class="q hmm" id="tileHmm" type="button"><span class="q-num" id="tHmm">0</span><strong>納得いかない</strong><small>見直す</small></button>
+          </div>
+
+          <div class="panel">
+            <div class="prog-label"><span id="progDeck"></span>の覚えたカード</div>
+            <div class="prog-num"><b id="pKnow">0</b><span>/ <span id="pTotal">0</span>枚</span><span id="pPct" style="margin-left:auto"></span></div>
+            <div class="bar" aria-hidden="true"><span id="bKnow" style="background:var(--know)"></span><span id="bHmm" style="background:var(--hmm)"></span><span id="bNo" style="background:var(--no)"></span></div>
+            <div class="legend">
+              <div><span><i class="dot" style="background:var(--know)"></i>覚えた</span><b id="cKnow">0</b></div>
+              <div><span><i class="dot" style="background:var(--no)"></i>まだ</span><b id="cNo">0</b></div>
+              <div><span><i class="dot" style="background:var(--hmm)"></i>納得×</span><b id="cHmm">0</b></div>
+              <div><span><i class="dot" style="background:var(--desk-2)"></i>未学習</span><b id="cNew">0</b></div>
+            </div>
+            <div class="prog-foot"><div class="g-meta" id="gMeta"></div><button class="reset-btn" id="resetAll" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>記録をリセット</button></div>
+          </div>
+
+          <details class="panel settings" id="settings">
+            <summary><span>設定</span><span class="set-sum" id="setSum"></span></summary>
+            <div class="set-body">
+              <div class="setting"><div class="setting-label">1セットの枚数</div><div class="chips" id="chSize"></div></div>
+              <div class="setting"><div class="setting-label">解答までのタイマー</div><div class="chips" id="chTimer"></div></div>
+              <div class="setting" id="catSetting"><div class="setting-label" id="catLabel">分類</div><div class="chips" id="chCat"></div></div>
+            </div>
+          </details>
+
+          <details class="panel settings">
+            <summary><span>あそびかた</span><span class="set-sum">← → ↑ の3方向</span></summary>
+            <div class="howto" aria-label="スワイプの方向">
+              <div class="dir up"><span>↑</span>納得いかない</div>
+              <div class="dir left"><span>←</span>覚えていない</div>
+              <div class="mini-card">問題</div>
+              <div class="dir right"><span>→</span>覚えた</div>
+            </div>
+            <p class="howto-note">カードをタップすると答えが出ます。<br>答えが腑に落ちないカードは上へ。あとで一覧から確かめられます。</p>
+          </details>
+
+          <div class="panel install" id="installTip" hidden>
+            <div class="inst-head"><img src="icons/icon-192.png" alt="" width="40" height="40"><div><strong>ホーム画面に追加しよう</strong><small><span class="nb">アイコンからすぐ開けて、</span><span class="nb">通信なしでも使えます</span></small></div><button class="linkbtn" id="instClose" type="button">閉じる</button></div>
+            <ol class="inst-steps" id="instIOS" hidden>
+              <li><span class="nb">Safariの</span><span class="nb"><b>共有ボタン</b>をタップ</span><br><small class="inst-sub">画面下の□に↑のマーク（iPadは右上）</small></li>
+              <li><span class="nb">メニューを下へ</span><span class="nb">スクロールして</span><span class="nb"><b>「ホーム画面に追加」</b></span><span class="nb">をタップ</span></li>
+              <li><span class="nb">右上の</span><span class="nb"><b>「追加」</b>をタップ</span></li>
+            </ol>
+            <button class="cta inst-btn" id="instBtn" type="button" hidden><span><strong>アプリとしてインストール</strong><small>ホーム画面にアイコンが追加されます</small></span><span class="arrow">↓</span></button>
+            <p class="note" id="instOther" hidden><span class="nb">ブラウザのメニュー（︙）から</span><span class="nb">「ホーム画面に追加」</span><span class="nb">または</span><span class="nb">「アプリをインストール」を</span><span class="nb">選んでください。</span></p>
+          </div>
+
+          <button class="btn2 add" id="addDeck" type="button">＋ 単語帳の追加・管理<small>Excel・CSV・貼り付けで自分の単語帳を追加</small></button>
+        </div>
+      </section>
+
+      <!-- STUDY -->
+      <section class="screen" id="scr-study" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="quit" type="button">← TOP</button>
+          <span class="navtitle" id="sessCount">1 / 20</span>
+          <button class="navbtn" id="undo" type="button">↺ 戻す</button>
+        </div>
+        <div class="study-body">
+          <div class="sess-bar"><span id="sessBar"></span></div>
+          <div class="stage" id="stage"></div>
+          <div class="actions-wrap">
+            <button class="reveal-btn" id="btnReveal" type="button">タップして答えを見る</button>
+            <div class="sort-guide" id="sortGuide" hidden>
+              <p class="guide-text">スワイプかボタンで仕分けよう</p>
+              <div class="actions">
+                <button class="act no" id="btnNo" type="button"><span>←</span>覚えていない</button>
+                <button class="act hmm" id="btnHmm" type="button"><span>↑</span>納得いかない</button>
+                <button class="act know" id="btnKnow" type="button"><span>→</span>覚えた</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="screen" id="scr-result" hidden>
+        <div class="scroll">
+          <div class="res-head"><div class="eyebrow">Session clear</div><h2>おつかれさま</h2><p id="resSub"></p></div>
+          <div class="panel res-grow" id="resGrow">
+            <div class="plant small" id="resPlant" aria-hidden="true"></div>
+            <div class="g-info">
+              <div class="levelup" id="levelUp" hidden></div>
+              <div class="xp-gain"><b id="resXp">+0</b> XP</div>
+              <div class="g-bar"><span id="resBar"></span></div>
+              <div class="g-next" id="resNext"></div>
+            </div>
+          </div>
+          <div class="res-stats">
+            <div class="rs know">覚えた<b id="rKnow">0</b></div>
+            <div class="rs no">覚えていない<b id="rNo">0</b></div>
+            <div class="rs hmm">納得いかない<b id="rHmm">0</b></div>
+          </div>
+          <button class="cta" id="resAgain" type="button"><span><strong><span class="nb">覚えていない単語を</span><span class="nb">もう一度</span></strong><small id="resAgainSub"></small></span><span class="arrow">→</span></button>
+          <h2 class="sec-title">このセットで「覚えていない」にした単語</h2>
+          <div class="panel list" id="resList"></div>
+          <button class="btn2" id="resTop" type="button">TOPへ戻る</button>
+        </div>
+      </section>
+
+      <!-- DECKS -->
+      <section class="screen" id="scr-decks" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="decksBack" type="button">← TOP</button>
+          <span class="navtitle">単語帳</span>
+          <span style="width:52px"></span>
+        </div>
+        <div class="scroll">
+          <div class="panel list" id="deckList"></div>
+
+          <h2 class="sec-title">単語帳を取り込む</h2>
+          <div class="panel imp">
+            <div class="fmt" aria-label="取り込む表の形">
+              <div class="fh">A列</div><div class="fh">B列</div><div class="fh">C列</div>
+              <div>表（問題）</div><div>裏（答え）</div><div>分類<small>（なくても可）</small></div>
+            </div>
+            <label class="field"><span>ファイルから（.xlsx / .csv / .txt）</span>
+              <input type="file" id="impFile" accept=".xlsx,.xls,.csv,.tsv,.txt"></label>
+            <label class="field"><span>または、Excelやスプレッドシートのセルをコピーして貼り付け</span>
+              <textarea id="impText" rows="5" placeholder="photosynthesis	光合成	理科&#10;1603	江戸幕府が開かれる	日本史"></textarea></label>
+            <label class="check"><input type="checkbox" id="impHead"> 1行目は見出し（取り込まない）</label>
+            <div id="impPreview"></div>
+            <label class="field"><span>単語帳の名前</span><input type="text" id="impName" placeholder="例：中2理科 用語"></label>
+            <button class="cta" id="impGo" type="button" disabled><span><strong>取り込んで使う</strong><small>取り込んだ単語帳に切り替わります</small></span><span class="arrow">→</span></button>
+            <button class="linkbtn" id="impSample" type="button">サンプル（元素記号）を入れてみる</button>
+          </div>
+          <p class="note">取り込んだ単語帳と記録は、このブラウザの中だけに保存されます。生徒に配る場合は、生徒それぞれの端末で取り込んでください。</p>
+        </div>
+      </section>
+
+      <!-- GROWTH GUIDE -->
+      <section class="screen" id="scr-grow" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="growBack" type="button">← TOP</button>
+          <span class="navtitle">学びの木</span>
+          <span style="width:52px"></span>
+        </div>
+        <div class="scroll">
+          <div class="panel xp-rules">
+            <h2 class="sec-title" style="margin:0 0 8px">XPのもらい方</h2>
+            <div class="rule"><span>カードを1枚めくる</span><b>+1</b></div>
+            <div class="rule"><span>「覚えた」にする</span><b>+1</b></div>
+            <div class="rule"><span>その日はじめての1枚</span><b>+10</b></div>
+            <div class="rule"><span>連続ログインボーナス<span class="sub">連続日数×2（最大+14）</span></span><b>+14</b></div>
+            <h2 class="sec-title" style="margin:16px 0 8px">休むと…</h2>
+            <div class="rule minus"><span>1日休む（しおれ気味）</span><b>−5</b></div>
+            <div class="rule minus"><span>2日目も休む（しおれている）</span><b>−10</b></div>
+            <div class="rule minus"><span>3日目以降は毎日（枯れかけ）</span><b>−15</b></div>
+            <p class="note" style="margin-top:8px"><span class="nb">XPが減ると、</span><span class="nb">木の段階が</span><span class="nb">下がることもあります。</span><span class="nb">その日に</span><span class="nb">1枚でもめくれば、</span><span class="nb">木はすぐ</span><span class="nb">元気に戻ります。</span></p>
+            <h2 class="sec-title" style="margin:16px 0 8px">栄養剤</h2>
+            <div class="rule"><span>「大樹」まで育て切る</span><b>1本</b></div>
+            <div class="rule"><span>大樹のあと、60XPためるごと</span><b>1本</b></div>
+            <p class="note" style="margin-top:8px"><span class="nb">栄養剤は</span><span class="nb">何本でも</span><span class="nb">ためておけます。</span><span class="nb">休んだあとに</span><span class="nb">TOPで使うと、</span><span class="nb">1本につき</span><span class="nb">休んだ1日分が</span><span class="nb">取り消され、</span><span class="nb">減ったXPも</span><span class="nb">戻ります。</span></p>
+          </div>
+          <div class="stages" id="stageList"></div>
+        </div>
+      </section>
+
+      <!-- CARDS EDIT（取り込んだ単語帳のカード編集） -->
+      <section class="screen" id="scr-cards" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="cardsBack" type="button">← 単語帳</button>
+          <span class="navtitle" id="cardsTitle">カードを編集</span>
+          <span style="width:52px"></span>
+        </div>
+        <div class="scroll">
+          <p class="note"><span class="nb">まちがえて取り込んだカードは</span><span class="nb">「削除」で消せます。</span><span class="nb">消した直後なら</span><span class="nb">「元に戻す」で戻せます。</span></p>
+          <label class="field" for="cardsSearch"><span id="cardsCount"></span><input type="text" id="cardsSearch" placeholder="問題・答えで探す"></label>
+          <div class="panel list" id="cardsList"></div>
+        </div>
+      </section>
+
+      <!-- HMM LIST -->
+      <section class="screen" id="scr-list" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="listBack" type="button">← TOP</button>
+          <span class="navtitle" id="listTitle">納得いかないカード</span>
+          <span style="width:52px"></span>
+        </div>
+        <div class="scroll">
+          <p class="note" id="listNote"></p>
+          <button class="cta" id="listStudy" type="button"><span><strong id="listStudyLabel">この単語だけでめくる</strong><small id="listSub"></small></span><span class="arrow">→</span></button>
+          <div class="panel list" id="hmmList"></div>
+        </div>
+      </section>
+
+    </div>
+    <div class="sheet-back" id="resetSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rsTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="rsTitle">記録をリセット</h2>
+        <p class="note" id="rsDeck"></p>
+        <div class="rs-opts" id="rsOpts" role="radiogroup" aria-label="リセットする範囲"></div>
+        <p class="rs-keep">学びの木・XP・連続日数は消えません。</p>
+        <div class="rs-actions"><button class="btn2" id="rsCancel" type="button">やめる</button><button class="rs-go" id="rsGo" type="button">リセット</button></div>
+      </div>
+    </div>
+    <div class="sheet-back" id="mixSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mixTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="mixTitle">ランダムでめくる</h2>
+        <p class="note">どの範囲からランダムに出すか選んでください。枚数は設定の「1セットの枚数」に合わせます。</p>
+        <div class="rs-opts" id="mixOpts"></div>
+        <button class="btn2" id="mixCancel" type="button">やめる</button>
+      </div>
+    </div>
+    <div class="sheet-back" id="orgSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="orgTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="orgTitle">単語帳</h2>
+        <p class="note" id="orgSub"></p>
+        <div class="rs-opts" id="orgOpts"></div>
+        <button class="btn2" id="orgCancel" type="button">やめる</button>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="homebar" aria-hidden="true"></div>
+  </div>
+</div>
+
+<script src="vendor/xlsx.full.min.js" defer></script>
+<script>
+/* 収録単語帳：[名前, [[英語, 日本語], ...]] （Excelの「出典番号」ごと） */
+const UNIT_DATA=[["Unit1-3",[["adaptation","改作、脚色作品"],["entrust","～に委ねる、任せる"],["faculty","（大学の）学部、教職員"],["barricade","バリケード、障害物"],["wholesale","卸しの、卸売りの"],["assess","～を査定する、評価する"],["edible","食べられる"],["enforce","〈法など〉を守らせる、施行する"],["administer","～を行う、施行する"],["axis","軸"],["enrollment","登録、入学"],["conform","（規則などに）従う"],["compression","圧縮"],["mainstream","主流の、普通の"],["dictate","～を命令する、指図する"],["gratuity","心づけ、チップ"],["ethical","倫理的な、道徳的な"],["provoke","～を引き起こす、誘発する"],["unwittingly","故意でなく、うっかり"],["proficient","熟達した、技量のある"],["transmit","〈病気〉を伝染させる"],["applaud","～を称賛する"],["seize","～をつかむ、捕らえる"],["corrupt","堕落した、腐敗した"],["erupt","（感情を）爆発させる"],["bulky","かさばった、大きくて扱いにくい"],["buzz","（活動・会話などで）ざわめく"],["impulse","（突然の）欲求、衝動"],["foresight","先見（の明）"],["courtesy","礼儀正しさ、丁重さ"],["outsmart","（知恵・策略を使って）～の裏をかく"],["feasible","〈計画・方法などが〉実現可能な"],["bankrupt","破産した、倒産した"],["vicious","どう猛な、凶暴な"],["inflict","〈打撃・損害など〉を与える"],["transplant","～を移植する"],["interrogate","～に質問する、尋問する"],["blaze","（燃え盛る）炎、火炎"],["fragment","破片、断片"],["botanical","植物の、植物性の"],["prejudice","偏見、先入観"],["wither","しぼむ、枯れる"],["startle","～をびっくりさせる"],["dedicated","献身的な、打ち込んでいる"],["fragrant","香りのよい"],["confer","～を与える、授与する"],["fabricate","〈話・情報など〉をでっち上げる、捏造(ねつぞう)する"],["biographical","伝記の"],["nutritious","〈食品が〉栄養のある"],["summon","～を呼び出す、召喚する"],["token","印、証拠"],["intact","損なわれていない、無傷で"],["halt","止まる、停止する"],["heed","～に気をつける、～を心に留める"],["sibling","兄弟姉妹（の1人）"],["vacant","空いている、使われていない"],["bystander","傍観者、見物人"],["anarchy","無政府状態"],["filthy","汚い、不潔な"],["fatality","死亡者（数）"],["retreat","撤退する、退却する"],["bewilder","～を困惑させる、当惑させる"],["invoice","送り状、請求明細書"],["apparent","明白な、明瞭な"],["barren","〈土地が〉不毛の"],["spacious","広々とした"],["optional","任意の、選択が自由の"],["rotate","（～を）交替する、循環する"],["heap","（雑然と積み上げた）山、堆積"],["spontaneous","〈行為などが〉自発的な、自然に生まれる"],["deduct","～を差し引く、控除する"],["autograph","（著名人の）サイン"],["mandatory","義務的な、強制的な"],["distort","～をゆがめる"],["literacy","読み書きの能力"],["precision","正確さ"],["objective","目的、目標"],["archive","文書保管所"],["inefficient","効率の悪い、非効率的な"],["famine","飢饉(ききん)"],["prolong","～を引き延ばす、長引かせる"],["disastrous","破滅を招く、悲惨な"],["conclusive","決定的な、確実な"],["cynical","懐疑的な"],["stagger","よろめく、ふらつく"],["outgoing","社交的な、外交的な"],["decay","腐る、朽ちる"],["surpass","～に勝る、～を超える"],["discontent","不満、不平"],["dismal","〈場所・時・状況などが〉陰気な、憂うつな"],["grumble","不平を言う、ぶつぶつ言う"],["unfold","〈話などが〉展開する"],["boost","励まし、元気づけ"],["unanimously","満場一致で"],["acknowledge","～を認める"],["consecutive","連続した"],["mimic","～をまねる"],["consensus","（意見などの）一致、合意"],["crooked","曲がっている"],["perspective","観点、見方"],["contagious","〈病気が〉伝染性の"],["stern","厳格な、厳しい"],["narrative","物語、語り口"],["mercy","慈悲、情け"],["adequate","十分な、満足な"],["guardian","保護者"],["liberate","～を自由にする、解放する"],["fragile","壊れやすい"],["punctuality","時間厳守；時間通りの"],["minor","未成年者"],["withstand","～に耐える、持ちこたえる"],["omit","〈人・もの・情報など〉を抜かす、省略する"],["skeptical","懐疑的な"],["earnest","熱心な、真剣な"],["discard","〈不用品など〉を捨てる、処分する"],["indifferent","無関心な"],["thrive","繁栄する、成功する"],["notify","～に通知する、知らせる"],["deceive","〈人〉をだます、欺く"],["accelerate","加速する；～を加速させる"],["evolve","進化する"],["deceased","死去した"],["relic","（過去の）遺物、遺跡"],["refrain","控える"],["verbal","口頭の"],["impractical","現実的でない、実用的でない"],["stain","しみ、汚れ"],["gracious","親切な、腰の低い"],["composed","落ち着いた、平静な"],["incorporate","～を組み込む"],["ascent","登ること、上昇"],["stunned","あぜんとした"],["overthrow","〈政府など〉を転覆させる"],["demote","～を降格する"],["petition","嘆願書"],["fascination","魅了されること"],["escort","〈人〉を連行する、護送する"],["devoted","献身的な、熱心な"],["correspondence","文通、通信"],["oversight","ミス、見落とし"],["exceptional","特にすぐれた"],["irrigate","〈作物〉に水をやる；〈土地〉を灌漑(かんがい)する"],["rash","〈言動などが〉性急な、軽率な"],["consolidate","～を強固にする"],["presume","～と推定する、見なす"],["comply","（要求・希望などに）従う、応じる"],["tremble","〈人・声などが〉震える"],["integrate","～を統合する、まとめる"],["cozy","居心地のよい"],["enlist","〈援助など〉を得る、求める"],["transparent","〈組織・活動などが〉透明性の高い"],["abridged","短縮された、簡約版の"],["resume","～を再開する"],["shrug","〈肩〉をすくめる"],["obsolete","時代遅れの、廃れた"],["refuge","避難所、保護区"],["privilege","特権、特典"],["binding","拘束力のある"],["interact","交流する"],["brutal","残酷な、残忍な"],["insistent","しつこい、執拗(しつよう)な"],["classify","～を分類する"],["raid","〈人・場所〉を急襲する"],["strain","負担、重圧"],["betray","～を裏切る"],["clarify","〈意味など〉を明らかにする"],["decisive","決定的な"],["donate","～を寄付する"],["phobia","病的恐怖"],["expire","有効期限が切れる"],["compensate","～に補償する、埋め合わせをする"],["detour","回り道、迂回路"],["frailty","弱さ、虚弱"],["ransom","身代金"],["elaborate","凝った、入念な"],["allegation","（根拠のない）申し立て"],["witty","機知のある、気の利いた"],["obstacle","障害（物）、支障"],["sneak","こっそり歩く"],["verify","～を確認する、証明する"],["compartment","仕切られた部分［区画］"],["plunge","突っ込む、飛び込む"],["inventive","創意に富む"],["division","（社会・経済的な）分断、分裂"],["complication","状況を複雑にする問題、厄介な問題"],["ration","［rations］食料"],["offset","～を相殺する"],["sturdy","頑丈な、丈夫な"],["wretched","悲惨な、みじめな"],["sacred","神聖な"],["vulnerable","〈人・感情などが〉傷つきやすい、（病気などに）かかりやすい"],["outcast","（社会から）追放された人、のけ者"],["delegate","～を任せる、委託する"],["reconcile","～を調和させる、調整する"],["foe","敵、（競技などの）相手"],["overdue","（支払い・返却の）期限が過ぎて"],["tranquil","静かな、穏やかな"],["tackle","〈問題など〉に取り組む"],["vain","うぬぼれた、自信過剰な"],["faint","〈光・音などが〉かすかな"],["eliminate","～を取り除く、（候補などから）～を外す"],["fundamental","基本的な、根本的な"],["custody","（未成年者の）保護、親権"],["recruitment","（社員などの）新規採用；人員補充"],["weary","ひどく疲れた"],["minute","微小な、微細な"],["prime","最高の、最上の"],["venue","開催地、会場"],["deficit","不足（額）、赤字"],["designate","～を指定する、指名する"],["scarcity","（食料・資源などの）不足、欠乏"],["segment","部分、区分"],["irresistible","抵抗できない、非常に魅力的な"],["biased","偏見を抱いた、偏った"],["casualty","被害者、犠牲者"],["perilous","危険な"],["stroll","散策、そぞろ歩き"],["tedious","つまらない、退屈な"],["perpetual","ひっきりなしの、絶え間ない"],["endeavor","懸命に努力する"],["detain","～を引き留める"],["testify","（～を）証言する"],["destined","運命づけられた"],["swell","腫(は)れる"],["sway","揺れる、揺れ動く"],["prevail","（戦い・論争で）勝つ"],["portray","～を描写する、言葉で書く"],["merit","実績、功績"],["invalid","無効の、効力のない"],["validity","妥当性、正当性"],["hinder","〈発展・動きなど〉を妨げる、妨害する"],["artifact","人工遺物"],["accommodate","～を収容できる"],["uphold","〈公約など〉を守る"],["affluent","裕福な、（経済的に）豊かな"],["hysterical","感情的になった、ヒステリックな"],["integral","なくてはならない、不可欠な"],["mingle","交際する、（輪に加わって）話をする"],["reluctant","気乗りがしない、しぶしぶの"],["urgency","緊急、切迫"],["enhance","〈価値・質・力など〉を高める、向上させる"],["cherish","～を大事にする"],["itinerary","旅程（表）、旅行計画"],["subsidize","～に補助金［助成金］を与える"],["void","〈契約などが〉無効の"],["prosecute","～を起訴する"],["waver","動揺する、迷う"],["vandalize","〈芸術作品など〉を（故意に）破壊する"],["encounter","～に遭遇する"],["disguise","～を変装させる、偽装する"],["adverse","〈天候が〉悪い、〈風向きなどが〉逆の"],["leak","〈情報〉を漏えいする"],["sober","酔っていない、しらふの"],["serene","静かな、穏やかな"],["prestigious","有名な、名誉ある"],["inmate","（刑務所の）囚人；（精神病棟の）収容者"],["considerate","思いやりのある"],["intrigued","興味をそそられた"],["tempting","魅力的な、心をそそる"],["expertise","専門知識"],["blockade","封鎖"],["outweigh","～より重要である、～に勝る"],["stubborn","頑固な"],["capacity","能力"],["dispense","～を調剤する、調合する"],["intruder","侵入者、乱入者"],["orphan","〈子ども〉を孤児にする"],["trivial","ささいな、つまらない"],["notorious","悪名高い、よく知られた"],["obedient","従順な、素直な"],["vocation","適職、天職"],["unveil","〈計画・製品など〉を初公開する、発表する"],["dehydration","脱水（症状）"],["overhaul","分解修理、オーバーホール"],["obsessed","心を奪われた、取りつかれた"],["dejected","意気消沈した、落胆した"],["gulp","～をがつがつ食べる、がぶがぶ飲む"],["mediocre","よくも悪くもない、平凡な"],["daring","大胆な"],["generate","～を生み出す、発生させる"],["compulsory","（法律・制度により）義務的な；〈科目が〉必修の"],["surplus","余剰、余剰分"],["nuisance","迷惑な人［もの］、厄介なこと"],["dread","～を恐れる、ひどく怖がる"],["resolute","意志の固い、固く決心している"],["withdraw","引き下がる；競技などへの）（出場を取り消す"],["altitude","高さ、海抜"],["captive","捕らえられた"],["envelop","～を包む、覆う"],["descendant","子孫、末裔(まつえい)"],["contemplate","～を熟考する"],["perish","〈人・動物が〉（突然）死ぬ"],["procession","行列"],["evaluate","～を評価する"],["explicit","明白な、あからさまな"],["thaw","〈氷・雪などが〉解ける"],["dock","埠頭(ふとう)、波止場"],["signify","～を示す、知らせる"],["habitual","常習的な、習慣的な"],["redundant","冗長な、不必要な"],["fictitious","虚構の、架空の"],["abundant","豊富な、たくさんの"],["oppress","〈人・集団〉を虐げる、圧迫する"],["lease","賃貸借契約"],["commend","～を称賛する、表彰する"],["diploma","卒業証書、学位"],["hasty","急ぎの、慌ただしい"],["correlation","相関関係"],["concede","〈試合・選挙など〉での敗北を認める"],["proclaim","～を宣言する、公布する"],["temperament","気質、気性"],["vivid","生き生きとした、鮮明な"],["dodge","～を（巧みに）かわす"],["indebted","恩義がある、借りがある"],["formulate","〈案・計画など〉を策定する"],["eloquent","雄弁な、聴衆の心に訴える"],["affiliate","～を提携させる"],["extravagant","浪費する、〈習慣などが〉ぜいたくな"],["milestone","画期的な事件［出来事］"],["inscription","碑文(ひぶん)、銘"],["trespass","不法侵入する"],["tickle","～をくすぐる"],["sentimental","感情的な、感傷的な"],["exert","〈自分〉を奮闘させる"],["optimistic","楽観的な、楽天主義の"],["alternate","揺れ動く、交替で行われる"],["conventional","従来の"],["certify","～を証明する、保証する"],["assumption","仮定、推定"],["refine","～を洗練［改良］する、〈技術など〉を磨く"],["bribe","賄賂"],["unwarranted","根拠のない、不当な"],["forthcoming","率直な、協力的な"],["stale","〈食べ物が〉新鮮でない、〈パンなどが〉パサパサになった"],["predator","捕食動物、捕食者"],["cultivate","〈土地〉を耕す"],["divine","神の"],["congestion","（交通・場所などの）混雑"],["hectic","慌ただしい、非常に忙しい"],["chatter","無駄話、おしゃべり"],["obstruct","〈進行・視界など〉を妨げる"],["threaten","～を脅す、脅迫する"],["trigger","～の引き金になる、～を誘発する"],["defendant","被告"],["coalition","（国・政党などの）連立、連合"],["abruptly","突然、不意に"],["exclusive","排他的な；上流階級専用の"],["reconstruct","〈状況・事件など〉を再現する"],["clumsy","不器用な、ぎこちない"],["lenient","〈人・判決などが〉寛大な、甘い"],["revolve","回転する"],["conspire","共謀する、企む"],["elevate","～を上げる、持ち上げる"],["novelty","目新しいもの、目新しさ"],["resent","～に憤慨する"],["accord","一致、合意"],["clutch","～をしっかり握る、つかむ"],["contemporary","現代の、現代的な"],["exempt","免除された"],["graze","草をはむ"]]],["Unit4-6",[["malicious","悪意のある、意地の悪い"],["apprentice","見習い、徒弟"],["exhaust","〈財産・資源など〉を使いつくす"],["alteration","（小さな）変更、修正（点）"],["breach","（法律・約束などの）違反"],["intoxicated","酔っ払った"],["shatter","〈希望・信念など〉を打ち砕く"],["coherent","首尾一貫した"],["sue","〈人・会社など〉を告訴する"],["eccentric","一風変わった、常軌を逸した"],["forge","〈関係など〉を築く"],["prone","（好ましくない）傾向がある、～しがちな"],["collaborate","（科学・文芸などの分野で）協力する、共同で行う"],["nominate","～を指名する、推薦する"],["browse","（〈店など〉を）見て回る"],["tolerable","耐えられる、我慢できる"],["industrialize","〈国・地域など〉を産業化する、工業化する"],["ensure","～を確実にする、保証する"],["archaic","〈言葉が〉古風な、古語の"],["indicative","示して、暗示して"],["inquiry","問い合わせ、質問すること"],["uproot","～を（親しんだ場所から）引き離す、追い立てる"],["drastic","〈変化などが〉急激な"],["installment","（分割払いの）1回分の支払い"],["amenity","（生活・滞在などを快適にする）施設、設備"],["circulation","（印刷物の）発行部数"],["selective","慎重に選択する"],["roster","名簿、勤務リスト"],["preclude","～を妨げる"],["intentionally","意図的に、わざと"],["pretext","口実、言い訳"],["observant","観察力の鋭い、注意深い"],["confront","〈困難など〉に直面する"],["rhetoric","美辞麗句、誇張"],["ironic","〈状況・展開などが〉皮肉な"],["mobility","動きやすさ、可動性"],["inaccurate","不正確な、誤った"],["mediator","仲介者、調停者"],["transaction","取引、売買"],["drawback","欠点"],["supernatural","超自然の、不可思議な"],["plague","～を悩ませる、苦しめる"],["controversial","論争を引き起こす"],["deliberately","わざと、故意に"],["narrowly","かろうじて、間一髪で"],["prescribe","～を処方する"],["curfew","（子どもの）門限"],["spoil","〈子どもなど〉を甘やかす"],["upbringing","（子どもの）しつけ、教育"],["knot","結び目"],["excessive","過度の、極端な"],["obligation","（法的・道徳的）義務、責務"],["glare","まぶしい光"],["standstill","停止、休止"],["uproar","大騒ぎ、騒動"],["immerse","～を没頭させる、熱中させる"],["concession","譲歩"],["constitute","～と見なされる、～に等しい"],["doom","～を（悪く）運命づける"],["coincidence","（好み・出来事などの）偶然の一致"],["autopsy","検死（解剖）"],["convey","〈意思・情報など〉を伝える"],["preoccupied","夢中になった、心を奪われている"],["cramp","（激しい）腹痛"],["contradictory","〈話・考えなどが〉矛盾している"],["treacherous","（安全に見えて）危険な、油断できない"],["rusty","〈能力・技術などが〉鈍った、さびついた"],["reinforce","～を強化する、強固にする"],["literally","文字通りに"],["consultation","相談、協議"],["distinguish","～を目立たせる、際立たせる；～を有名にする"],["shriek","金切り声、悲鳴"],["immigrate","移住する、入植する"],["pious","信心深い、敬虔(けいけん)な"],["ambiguous","あいまいな"],["compatible","（人と）仲のよい、気が合う"],["savage","凶暴な、残忍な；〈動物が〉どう猛な"],["bashful","内気な、恥ずかしがり屋の"],["prospect","見込み、可能性"],["nauseous","吐き気を催した"],["batch","1回に生産［処理］される量"],["remote","辺ぴな、へき地の"],["admittedly","確かに、一般に言われているように"],["touchy","神経質な、敏感な"],["timid","臆病な、小心な"],["compliment","～を褒める、称賛する"],["patent","特許（権）"],["migration","（人・動物などの）移動、移住"],["ample","豊富な、たっぷりの"],["intricate","〈模様・形などが〉入り組んだ、複雑な"],["improper","不適切な、ふさわしくない"],["assorted","詰め合わせた、雑多な"],["aspire","目指す、熱望する"],["inhospitable","〈場所が〉住むのに適さない、荒れ果てた"],["disclose","〈秘密・情報など〉を明らかにする、公表する"],["shrewd","頭の切れる、やり手の"],["preconceived","あらかじめ考えた"],["transform","～を変える"],["evacuate","避難する"],["overcast","雲で覆われた、どんよりした"],["sustain","～を維持する、持続させる"],["chronological","年代順の、日付順の"],["resignation","辞任、辞職"],["implication","（予想される）影響、結果"],["irritate","～をいらいらさせる"],["oversee","～を監督する、監視する"],["exotic","外国産の、外来種の"],["mock","～をばかにする、からかう"],["superstition","迷信"],["mourn","〈死・不幸など〉を悲しむ、嘆く"],["precedent","前例、洗例"],["anecdote","逸話、秘話"],["remorseful","深く後悔した"],["condensation","（窓の）水滴、結露"],["breakthrough","飛躍的な進歩、現状突破"],["conceited","うぬぼれた"],["sob","すすり泣き"],["bid","試み、企て"],["excerpt","抜粋、引用"],["drought","干ばつ"],["clutter","（乱雑に）散らかったもの"],["appreciative","〈人が〉感謝して"],["fusion","融合（物）"],["commemorate","～を記念する、祝う"],["dent","へこみ、くぼみ"],["traitor","反逆者、裏切り者"],["digestion","消化（作用）、消化力"],["incentive","動機、インセンティブ"],["abstain","慎む、控える"],["afflict","〈病気・災害などが〉〈人・国など〉を苦しめる、悩ませる"],["indispensable","不可欠な、欠くことのできない"],["intimidate","〈人〉を脅迫する、おどす"],["alliance","（国・政党などの）同盟、（企業などの）提携"],["preservative","保存料、防腐剤"],["ranger","森林警備員"],["irrational","不合理な、ばかげた"],["resort","（手段に）頼る、訴える"],["calamity","災難、惨事"],["underrate","～を過小評価する、見くびる"],["debatable","議論の余地のある"],["abandon","～を捨てる、あきらめる"],["underlying","根底にある、根本的な"],["evaporate","蒸発する；～を蒸発させる"],["loathe","～をひどく嫌う"],["intervene","（調停・和平などのために）介入する"],["paranoid","被害［誇大］妄想の"],["cite","（例として）～を挙げる、引用する"],["crave","～を切望する、～が欲しくてたまらない"],["passionate","〈人・行為などが〉情熱的な、熱心な"],["odor","（独特の強い）匂い、（嫌な）臭気"],["facilitate","～を容易にする、促進する"],["recurrent","繰り返し起こる、再発する"],["nurture","〈子ども・植物など〉を育てる、養育する"],["paraphrase","～を（やさしく）言い換える"],["familiarize","〈人〉を慣れさせる"],["mobilize","〈軍隊など〉を動員する"],["uplifting","気持ちを高揚させる、励みとなる"],["devour","～をむさぼり食う"],["inventory","在庫、（店内の）全商品"],["intelligible","〈文・話などが〉はっきりしている、わかりやすい"],["flattery","お世辞、おべっか"],["incomprehensible","理解できない、不可解な"],["array","［an array of～］多様の～、数々の～"],["autonomy","自主性、自由"],["detach","～を切り離す、分離する"],["humanitarian","人道的な、博愛主義の"],["exaggeration","誇張、誇張した表現"],["subsequent","そのあとの、それに続く"],["traumatic","心的外傷を残す"],["rapidity","迅速さ、素早さ"],["unorthodox","正統でない、型破りな"],["receptive","理解がある、ものわかりのよい"],["miscellaneous","種々雑多な"],["idle","〈人・機械などが〉仕事をしていない、動いていない"],["moderation","適度、節度"],["pending","保留の、懸案の"],["hostile","〈環境などが〉厳しい"],["secluded","〈場所が〉人目につかない、人里離れた"],["resistant","耐久性のある"],["deception","だますこと、欺くこと"],["verge","間際、瀬戸際"],["entangle","～をもつれさせる、絡ませる"],["precaution","用心、予防措置"],["subscription","（予約）購読"],["allocate","～を割り当てる、配分する"],["poach","密猟する、密漁する"],["inherent","本来備わっている、生まれつきの"],["generalization","一般論"],["foil","〈計略など〉を妨げる、失敗させる"],["apprehension","（将来に関する）不安、心配"],["simultaneous","同時の、同時に起こる"],["stem","茎、幹"],["entrepreneur","起業家"],["folklore","民間伝承、伝説"],["dip","（価格・収入などの）低下、落ち込み"],["potent","〈薬などが〉強い効果を持つ"],["integrity","正直さ、誠実さ"],["illiterate","読み書きのできない"],["overstate","～を大げさに話す、誇張する"],["embark","始める、乗り出す"],["admission","入場許可、入会許可、入学許可"],["residential","住宅用の、居住に適した"],["privatize","～を民営化する"],["violation","（法律・規則などの）違反"],["authorize","～に権限を与える、許可する"],["endangered","（絶滅の）危機に瀕した"],["sizzle","ジュージューと音を立てる"],["wag","〈体の一部〉を振る"],["conservation","（動植物・森林などの）保護、保存"],["articulate","〈人が〉自分の考えをはっきり述べることができる"],["compel","～を強制する、強いる"],["depiction","描写、叙述"],["loophole","（法律・契約などの）抜け穴"],["amendment","（法律・規則などの）改正、修正"],["duration","（継続）期間"],["endow","～に（基金などを）寄付する"],["emission","排出（量）"],["scanty","〈ものが〉（量的に）不十分な、不足した"],["kinship","（性質などの）類似、近似"],["estimation","評価、意見、判断"],["ascertain","～を確かめる、確認する"],["remnant","名残、面影"],["strive","（懸命に）努力する"],["invariably","いつも、決まって"],["acute","〈痛みなどが〉鋭く激しい"],["growl","〈犬などが〉うなる、吠える"],["envision","〈将来など〉を想像する"],["bleak","〈見通しが〉よくない、暗い"],["infectious","〈感情などが〉うつりやすい、すぐに伝わる"],["endure","～に耐える"],["faulty","欠陥のある、不完全な"],["coverage","（テレビ・新聞などの）報道、取材"],["memoir","回顧録、回想録"],["competent","有能な、力量のある"],["applicable","当てはまる、適用できる"],["epidemic","流行、伝染（病）"],["stingy","けちな、しみったれた"],["informative","情報を提供する、有益な"],["quote","見積もり"],["ordeal","辛い体験、試練"],["unearth","（偶然）～を見つける、発見する"],["dilemma","ジレンマ、板ばさみ"],["testament","あかし、証拠"],["contaminate","～を汚染する"],["converge","〈人・乗り物などが〉集まる、集結する、群がる"],["yardstick","（判断・比較などの）基準、尺度"],["deserted","人通りのない、ひっそりとした"],["plea","嘆願、請願"],["brochure","パンフレット、小冊子"],["reign","治世、在位［統治］期間"],["erode","〈関係・自信などが〉損なわれる、失われる"],["spotless","汚れていない、しみひとつない"],["defy","～に反抗する、従わない"],["hazardous","有害な、危険な"],["finite","有限の、限りのある"],["prosper","〈人・事業などが〉繁栄する、成功する"],["ridicule","～を嘲笑(ちょうしょう)する、あざける"],["idealistic","理想主義的な"],["suspend","～を停職（処分）にする"],["charitable","慈善の"],["crumble","粉々になる、砕ける"],["abort","〈計画など〉を中止する"],["profess","～を公言する、明言する"],["assert","～を断言する、…と言い張る"],["hygiene","衛生（状態）"],["devastate","〈国・地域など〉を壊滅させる"],["fatigue","疲労、倦怠(けんたい)感"],["disposable","使い捨ての"],["adopt","～を採用する、採択する"],["frustrated","いらいらした、欲求不満の"],["catastrophe","破局、大失敗"],["rational","合理的な、筋の通った"],["arc","弧、弓形"],["immortality","不死、不滅の命"],["overpower","〈相手〉を（力で）押さえ込む"],["scrutiny","監視、綿密な調査"],["conditional","条件つきの"],["ingenuity","創意、巧妙さ"],["shortfall","不足、未達"],["quest","探求"],["submission","提出物、提示案"],["exile","追放者、亡命者"],["conceal","～を隠す、隠ぺいする"],["autobiography","自叙伝、自伝"],["assure","…だと〈人〉に保証する、請け合う"],["gush","〈液体が〉噴出する；〈液体〉を噴出する"],["annoyance","悩みの種、いらいらの元"],["herald","～の先触れをする、到来を告げる"],["indisputable","議論の余地のない、明白な"],["convince","〈人〉を説得する"],["formidable","〈敵・問題などが〉手ごわい"],["virtually","実質的には、ほとんど"],["dominance","支配、優勢"],["likeness","似ていること、類似点"],["lament","～を嘆く"],["hesitant","ためらった、ちゅうちょした"],["merge","（～を）統合する、合併する"],["disrupt","〈会合・制度・交通など〉を混乱させる、中断させる"],["furnished","〈部屋・家などが〉家具つきの"],["reckless","むこうみずな、無謀な"],["yearn","～を切望する、恋しく思う"],["fury","（悪天候などの）猛威"],["synchronize","～を同期させる、〈時計など〉の時間を合わせる"],["reputable","評判のよい、信頼のおける"],["fanatical","熱狂的な、狂信的な"],["stoically","平然と、冷静に"],["collide","〈乗り物・人などが〉衝突する"],["resurgence","再起、再燃、復活"],["neglect","～を無視する、なおざりにする"],["intermittently","断続的に、途切れ途切れに"],["burglary","押し込み強盗、住居侵入"],["ingredient","材料、食材"],["amicable","友好的な、円満な"],["insoluble","〈問題などが〉解決できない"],["boast","自慢する、誇る"],["arouse","〈注意・感情など〉を喚起する"],["censor","～を検閲する"],["upside","（悪い状況での）よい面"],["clerical","事務（員）の"],["discouraging","がっかりさせるような"],["persistent","しつこい、粘り強い"],["quota","（生産・販売などの）分担、ノルマ"],["cease","～（するの）を終える、やめる"],["inevitably","必然的に、必ず"],["haven","避難所、安全な場所"],["hypocritical","偽善的な"],["ballot","（無記名）投票"],["distract","〈注意など〉をそらす、散らす"],["attribute","～のせいにする"],["misleading","誤解を招きやすい、人を惑わせる"],["mischievous","〈子どもが〉いたずら好きな"],["accusation","告発、非難"],["divert","～の方向を変える"],["habitat","（動植物の）生息地、生息場所"],["observance","（行事を）祝うこと；（規則などを）守ること"],["downturn","（景気・物価などの）下落、沈滞"],["diagnose","～を診断する"],["hospitality","もてなし、接待"],["humidity","湿気、湿度"],["materialistic","物質主義の、実利主義の"],["audible","聞こえる、聞き取れる"],["disturbance","騒ぎ、暴動"],["perch","〈鳥が〉（止まり木に）止まる"],["probability","公算、見込み"],["substitute","代わり、代用品"],["modify","～を（部分的に）修正する、変更する"],["patriot","愛国者"],["scrub","～をごしごし磨く"],["combat","戦闘"],["avail","利益、効果"],["initiate","～を始める"],["accumulate","たまる、蓄積する、積もる"],["instill","〈思想など〉を植えつける、教え込む"],["reap","〈利益・報酬など〉を享受する、手にする"],["diligent","〈人・態度などが〉勤勉な、熱心な"],["prominence","目立つこと、有名"],["discredit","～の信用を傷つける"],["lure","～を誘い出す、誘い込む"],["remainder","残り、残り時間"],["sluggish","〈経済などが〉停滞した"]]],["Unit7-9",[["magnify","〈レンズなどが〉～を拡大する"],["blunt","〈ナイフなどが〉切れない、鈍い"],["scorn","〈人・考えなど〉を軽蔑する、ばかにする"],["barely","かろうじて"],["shred","～を切り刻む"],["invisible","見えない"],["rigid","〈考えなどが〉固い、硬直した"],["complement","～を補う、補完する"],["inclination","好み、傾向"],["spiteful","意地の悪い、悪意のある"],["hostage","人質"],["harass","～を（絶えず）困らせる、苦しめる"],["blurry","ぼやけた、おぼろげな"],["exceed","～を超える、～より多い"],["feeble","弱った、衰弱した"],["devise","～を考え出す、考案する"],["insane","正気でない、狂気の"],["deploy","〈部隊など〉を展開させる、配置する"],["recollect","～を（努力して）思い出す、回想する"],["conviction","有罪判決"],["infinite","無限の、無数の"],["petty","ささいな、つまらない"],["legacy","（過去からの）名残、遺産"],["component","成分、構成要素"],["dismayed","狼狽(ろうばい)して、落胆して"],["confine","～を限定する、限る"],["outsource","～を外部委託する"],["erect","～を建設する"],["impose","〈税・罰金など〉を課す、科す"],["comrade","（苦楽を共にした）仲間"],["shelter","避難所、保護施設"],["simmer","ことこと煮える；～をとろ火で煮る"],["nosy","詮索好きな、おせっかいな"],["dutiful","まじめな、忠実な"],["execute","～を実行する"],["unsound","〈心身が〉不健全な、不健康な"],["esteem","～を尊ぶ、（高く）評価する"],["rebellion","反乱"],["appliance","電化製品、器具"],["consent","同意、承諾"],["detention","（判決前の）勾留、留置"],["immeasurable","計り知れない"],["furious","激怒した"],["evade","〈義務・責任など〉を逃れる"],["attentive","注意深い、油断しない"],["liable","（法的に）責任がある、義務がある"],["wrinkle","（皮膚・布地などの）しわ"],["defective","欠陥のある"],["fraud","詐欺、詐欺行為"],["depot","貯蔵庫、倉庫"],["hinge","ちょうつがい"],["distress","苦悩、心痛；悩みの種"],["hardy","〈人・動物が〉頑丈な、丈夫な"],["indefinite","不定の、決まっていない"],["testimony","証言"],["muddy","泥の、泥だらけの"],["lump","しこり、腫瘍"],["encase","～をケースに収める"],["emigration","（他国などへの）移住"],["fussy","気難しい、（つまらないことに）騒ぎ立てる"],["restless","落ち着かない、そわそわした"],["bachelor","（大学を卒業した）学士、学士号"],["entitle","〈人〉に資格［権利］を与える"],["disgrace","～の面目を失わせる"],["confession","白状、自白"],["inhibit","〈人〉を抑える、抑制する"],["awkward","〈人・動作などが〉不器用な、ぎこちない"],["intersect","交差する、交わる"],["deprive","〈人・物〉から（物・権利などを）奪う"],["plentiful","（十二分なほど）たくさんの、豊富な"],["revolt","反乱、暴動"],["junction","合流点、分岐点"],["herd","〈動物〉を集める、移動させる"],["diminish","減少する"],["procedure","手続き、方法"],["scrap","〈計画・制度など〉を取りやめる、中止する"],["breadth","（知識などの）幅広さ"],["curse","呪い（の言葉）"],["spectacle","光景、眺め"],["extensive","広範囲の、多方面にわたる"],["carve","～を彫る、彫刻する"],["transition","移行、推移"],["subjective","主観的な"],["collapse","崩壊する"],["inhale","（空気・煙を）吸い込む"],["embrace","〈考え・提案など〉を受け入れる、採用する"],["diagram","図、図表"],["scratch","～を引っかく、～に傷をつける"],["trace","～の跡をたどる"],["eject","～を追い出す、追い払う"],["institution","機関、組織"],["adorable","とてもかわいい、愛らしい"],["arrogant","横柄な、尊大な"],["launch","〈新製品など〉を売り出す"],["sterile","不妊の、無精子の、繁殖力のない"],["assign","（仕事・部屋などを）〈人に〉割り当てる"],["coarse","〈生地・肌などが〉きめの粗い、ざらざらした"],["editorial","（新聞の）社説"],["retrieve","～を取り戻す、回収する"],["overload","～に荷を積みすぎる、過重な負担をかける"],["supplement","～を補う、補足する"],["pinpoint","〈原因など〉を特定する"],["illogical","非論理的な、筋の通らない"],["bearable","耐えられる"],["sincerity","誠実さ、正直さ"],["damp","湿った、じめじめした"],["stack","～を（整然と）積み重ねる"],["suite","ひと続きの部屋、スイートルーム"],["pluck","～を摘む、引き抜く、むしる"],["summit","（山の）頂上、頂"],["striking","顕著な、著しい"],["boom","（人口の）急増；（物価の）高騰"],["uptight","いら立って、神経質になって"],["slump","低迷、不振"],["crucial","非常に重大な、決定的な"],["ripen","〈果物などが〉熟す、実る"],["sequel","続き、（映画・本などの）続編"],["disarm","～から武器を取り上げる"],["shield","防御物、遮蔽(しゃへい)物"],["subtle","かすかな、微妙な"],["horrify","～をぞっとさせる"],["crouch","しゃがむ、かがむ"],["cowardly","〈行動・人などが〉臆病な、卑怯な"],["authentic","本物の、正統な"],["diagonally","対角線の方向に、斜めに"],["choke","窒息する、むせる"],["insight","洞察力、識見"],["outdated","時代遅れの"],["vulgar","〈言動などが〉下品な；〈人・振る舞いなどが〉粗野な"],["aimlessly","目的もなく、あてどなく"],["crude","雑な、大雑把な"],["impassable","〈道が〉通り抜けできない、通行不能の"],["plural","複数の"],["adolescent","青年期の、思春期の"],["trim","～を刈り込む、手入れする"],["sanctuary","鳥獣保護区域"],["partition","（部屋などの）仕切り、パーティション"],["dismiss","〈人〉を解雇する"],["smash","激突する"],["trait","（性格・身体上の）特徴"],["renovate","～を改修する"],["premature","時期尚早の"],["despise","～を嫌悪する、軽蔑する"],["taint","〈水・空気など〉を汚す、汚染する"],["spark","火花、きらめき"],["deteriorate","〈もの・状況・品質などが〉悪化する"],["draft","下書き、草稿"],["genuine","本物の"],["dubious","不審な、怪しげな"],["swift","迅速な、素早い"],["ornament","装飾品、装身具"],["suspicious","不審に思う、疑う"],["glossy","光沢のある"],["syndrome","症候群"],["strangle","～を窒息させる、絞殺する"],["discriminate","差別する"],["modest","謙虚な"],["venture","ベンチャー（事業）"],["tragic","悲劇的な、悲惨な"],["mortal","致命的な、命にかかわる"],["supreme","（程度・重要度などが）最高の"],["sacrifice","～を犠牲にする"],["legible","判読できる、読みやすい"],["scrape","～をこする、こすって傷つける"],["tenant","（家屋・部屋などの）賃借者；（貸ビルなどの）テナント"],["decode","～を解読する"],["naive","単純な、世間知らずの"],["identical","まったく同じの、そっくりそのままの"],["forsake","〈好きなことなど〉をあきらめる、捨てる"],["grant","〈許可など〉を与える、認める"],["ratio","比率、割合"],["retrace","～を引き返す"],["maternity","妊婦の"],["agitate","〈人〉を動揺させる、〈気持ちなど〉をかき乱す"],["domain","（関心・学問などの）領域、分野"],["curb","～を抑制する、制限する"],["heritage","遺産、伝統"],["recede","後退する、遠ざかる"],["hurdle","障害、困難"],["convert","～を変える、変換する"],["tame","〈動物が〉飼い慣らされた"],["tariff","関税（率）"],["successor","後任者、後継者"],["tentative","〈予定などが〉仮の、暫定的な"],["dismantle","〈機械など〉を分解する、解体する"],["deflate","空気が抜ける、へこむ"],["chore","（日常的な）家事、雑用"],["blueprint","（建築・機械の）設計図、青写真"],["console","～を慰める、元気づける"],["monotonous","単調な、変化のない"],["denial","否定、否認"],["relay","〈情報・連絡など〉を伝達する"],["soak","～を浸す"],["depart","出発する"],["rejoice","喜ぶ、歓喜する"],["beggar","物乞い、こじき"],["medieval","中世の；中世風の"],["penetrate","貫通する；侵入する"],["dazed","（ショックなどで）ぼう然とした"],["immense","広大な、巨大な"],["interrupt","～の邪魔をする、～を遮る"],["vanish","（突然）消える、姿を消す"],["twist","〈ふた・つまみなど〉を回す"],["incurable","〈病気などが〉不治の、治せない"],["redeem","〈失敗・弱点など〉を補う"],["pioneer","～を開拓する、創始する"],["restrain","〈人など〉を拘束する"],["slant","傾く"],["sprain","～をねんざする"],["anthem","賛歌、祝いの歌"],["treaty","条約、協定"],["dispute","～に異議を唱える"],["equivalent","〈数量などが〉同等の、相当する"],["pierce","～を突き通す"],["seal","（手紙・容器などの）封印紙、封ろう"],["exclaim","突然大声で言う、叫ぶ"],["foster","〈才能など〉を育む、促進する"],["interfere","妨げる、邪魔をする"],["ethnic","民族の、人種の"],["counter","～に対抗する、反撃する"],["wreck","（乗り物の）残骸"],["bureau","（官庁などの）局、事務局"],["decent","満足できる、まずまずの"],["pose","〈問題・脅威など〉を引き起こす"],["graphic","〈描写・記述が〉生々しい、露骨な"],["sanction","制裁（措置）"],["imitate","～をまねる、模倣する"],["bait","（釣りなどの）えさ"],["sinister","邪悪な、悪意のある"],["lean","やせた、引き締まった"],["deflect","～をそらす、かわす"],["ignition","点火、引火"],["harsh","〈気候・状況などが〉厳しい、過酷な"],["brace","身構える、準備する"],["brisk","〈動作が〉きびきびした"],["suppress","～を制圧する、鎮圧する"],["declaration","宣言、布告；（正式な）発表"],["propel","～を推進する、前進させる"],["commencement","開始、始まり"],["illustrate","（図・絵などで）～を説明する"],["gloomy","暗い、陰気な"],["boundary","境界（線）"],["functional","機能本位の、役に立つ"],["gradation","段階的推移、グラデーション"],["vault","跳び越える"],["analogy","類似点、共通点"],["flaw","欠点、欠陥"],["cunning","悪賢い、ずるい"],["insult","侮辱"],["disgust","〈人〉に嫌悪感を起こさせる"],["salute","～に敬礼する"],["friction","摩擦"],["simulate","～の模擬実験をする、～をシミュレーションする"],["replicate","〈実験など〉を再現する"],["stumble","つまずく、よろける"],["riot","暴動、騒動"],["texture","（織物・生地などの）手触り、きめ"],["pledge","～を誓う"],["blast","爆発、爆風"],["relieve","～を和らげる、緩和する"],["tremendous","〈数量・程度などが〉非常に大きい"],["perimeter","周囲［周辺］（の長さ）"],["nourish","（食物・栄養分を与えて）～を養う、育てる"],["displace","〈人・動物など〉を立ち退かせる、追い出す"],["wield","〈権力・影響など〉を行使する"],["vigorous","活力にあふれた"],["cordial","心からの、友好的な"],["snatch","～をひったくる、素早く手に入れる"],["impair","〈能力など〉を弱める、損なう"],["offensive","〈言葉・態度などが〉失礼な、侮辱的な"],["empower","〈人〉に権限［裁量］を与える"],["starve","飢える、餓死する"],["influx","〈人・金・ものなどの〉到来、殺到、流入"],["pathetic","（いらいらするほど）お粗末な、情けない"],["righteous","〈人・行為などが〉（道徳的に）正しい、正義の"],["maze","迷路、迷宮"],["expel","～を追放する、追い出す"],["durable","耐久性のある、長持ちする"],["invasion","侵入、侵略"],["concise","〈文章・説明などが〉簡潔な"],["degrade","～の価値［品位］を低下させる"],["bump","（道路の）凹凸(おうとつ)"],["compound","化合物"],["remodel","～を改築する、リフォームする"],["prompt","～を促す、刺激する"],["dislocate","～を脱臼させる"],["steep","急勾配の、険しい"],["chunk","（パン・肉・木材などの）大きな塊"],["radical","急進的な、過激な"],["hover","〈数値が〉ほぼ安定している"],["pursue","～に従事する"],["enrich","〈土地〉を肥沃にする"],["circuit","回路"],["indulgent","甘やかす、寛大な"],["incidence","（病気などの）発生"],["limitation","限界"],["glossary","（巻末の）語彙集；用語辞典"],["deformity","変形、奇形"],["ruin","～を破滅させる、台無しにする"],["humble","謙遜した、控えめな"],["steer","～を操縦する、運転する"],["victorious","勝利を得た、勝った"],["asset","（会社・個人などの）資産、財産"],["surrender","降伏する"],["transcription","文字起こし"],["mutual","相互の"],["charm","～をとりこにする、操る"],["discreet","控えめな、目立たない"],["crisp","〈食べ物が〉ぱりぱりした、かりっとした"],["superior","すぐれている、勝っている"],["primitive","原始の、未開の"],["superficial","表面の、表面的な"],["frantic","（心配・恐怖などで）取り乱した"],["drift","漂流する、漂う"],["dispatch","〈部隊・使者など〉を派遣する"],["ritual","（宗教的）儀式、祭式"],["litter","〈場所〉を（ごみなどで）散らかす"],["vacuum","真空"],["grasp","～を（しっかり）つかむ、握る"],["obscure","不明瞭な、ぼやけた"],["conquest","（武力による）征服"],["dimension","局面、側面"],["commission","報酬、歩合（給）：手数料"],["dreary","陰うつな、物寂しい"],["preference","好み"],["aggravate","〈問題・状況など〉を悪化させる"],["slack","〈ロープなどが〉緩い、たるんだ"],["ditch","溝、用水路"],["tuition","授業料"],["torch","たいまつ、トーチ"],["yield","～を産出する、生み出す"],["contempt","軽蔑、軽視"],["gargle","うがいをする"],["originate","起こる、生じる"],["fierce","激しい、猛烈な"],["stray","道に迷う、はぐれる"],["drowsy","眠い"],["tender","〈肉・野菜などが〉柔らかい"],["contract","契約、契約書"],["endorse","〈意見・提案など〉を承認する、支持する"],["immediate","差し迫った、緊急の"],["discharge","～を解放する"],["vibrant","活気に満ちた"],["mellow","〈ワイン・チーズなどが〉熟成した"],["recall","～を思い出す、覚えている"],["impede","〈進行・発展など〉を妨げる、遅らせる"],["parallel","平行した、並列の"],["splinter","（木・ガラス・金属などの）とげ、破片"],["exterminate","〈種族・動物など〉を皆殺しにする、根絶する"],["rally","（大規模な）集会"],["fluent","（外国語などが）流ちょうな"],["chaotic","混沌とした、無秩序な"],["abolish","～を廃止する"],["enclose","～を同封する"],["downfall","没落、破滅"],["scatter","～をまき散らす"],["glorify","～を美化する、（実際以上に）よく見せる"],["rotten","腐った、腐敗した"],["tease","～をからかう、いじめる"],["intimate","親しい、親密な"]]],["Unit10-12",[["blissful","至福の"],["configuration","（部分・要素の）配置、配列"],["emerge","出現する、姿を現す"],["imply","～をほのめかす、暗に言う"],["partial","部分的な"],["restrict","～を制限する、限定する"],["ammunition","弾薬、弾丸"],["adrift","漂流して、さまよって"],["toll","犠牲、死傷者数"],["advocate","提唱者、主張者"],["comprise","～を構成する"],["viable","実行可能な、成功の見込める"],["underfed","栄養不足の"],["scan","〈人体など〉を走査する、スキャンする"],["secure","安全な、守られた"],["ruthless","〈人・行為などが〉冷酷な、無慈悲な"],["fracture","〈骨・金属など〉を折る、～に亀裂を生じさせる"],["lofty","高潔な、深遠な"],["update","～を改訂する、新しいものにする"],["unravel","〈難問など〉を解決する、〈謎など〉を解く"],["tumble","転ぶ、倒れる"],["specimen","標本、サンプル"],["admonish","〈人〉を叱る、諭す"],["crawl","はう、腹ばいで進む"],["phase","（発達・変化などの）段階、局面"],["input","情報［アイデア、アドバイス］の提供"],["garment","衣服"],["perception","理解、認識"],["vital","極めて重要な"],["instigate","〈公的な活動など〉を始める；～を引き起こす"],["emphasize","～を強調する"],["admiration","称賛、感嘆"],["grain","穀物、穀類"],["glimpse","ちらりと見えること、ひと目"],["enrage","～を激怒させる"],["genetic","遺伝の、遺伝的な"],["proponent","（主義・方針などの）擁護者、支持者"],["sympathize","同情する、共感する"],["vigilant","警戒を怠らない、用心深い"],["alienate","～を遠ざける、疎外する"],["induce","～を引き起こす、誘発する"],["livestock","家畜"],["hatch","〈ひな・卵が〉ふ化する；〈ひな・卵〉をふ化させる"],["protocol","礼儀作法"],["incriminate","〈人〉に罪を負わせる、〈人〉を有罪にする"],["deem","～を考える、見なす"],["shove","～を（力任せに）押す、押しのける"],["ecstatic","興奮した、有頂天になった"],["condiment","調味料、香辛料、薬味"],["typify","～の典型となる"],["reckon","…と思う、推測する"],["aquatic","水生の、水中に住む"],["projection","予測、見積もり"],["dialect","方言"],["contrast","対照を成す"],["minimal","最小限の、最低限の"],["pastime","娯楽、気晴らし"],["revoke","〈免許・法律など〉を無効にする、廃止する"],["desperate","切望する"],["swarm","（昆虫・動物などの）群れ"],["inept","能力に欠ける、不器用な"],["holistic","全体論の、全体（論）的な"],["additive","（食品）添加物"],["context","状況、前後関係"],["beckon","（〈人に〉）手招きする、合図する"],["sphere","球、球体"],["amnesty","（政治犯などに対する）恩赦、特赦"],["assimilate","同化する、溶け込む"],["menace","脅威、危険（なもの［人］）"],["thrust","～をぐっと押す、〈手など〉を突っ込む"],["corrode","〈金属など〉を腐食させる；〈金属などが〉腐食する"],["inspire","〈人〉を奮い立たせる"],["enchant","〈人〉を魅惑する、魅了する"],["confirm","～を確認する、裏づける"],["duplicate","～を複製する"],["refund","払い戻し、返金"],["dump","〈ごみなど〉を捨てる"],["majestic","〈外観・光景などが〉雄大な、荘厳な"],["hypothetical","仮定の"],["disdain","軽蔑"],["vessel","（大型の）船、船舶"],["motive","動機"],["settlement","入植、定住"],["miniature","小型の、縮小した"],["grind","〈穀物・コーヒー豆など〉をひく"],["associate","～を関連づける、結びつける"],["futile","無益な、無駄な"],["downplay","～を（実際より）軽く扱う、過小評価する"],["predate","（時間的に）～よりも先行する、前に起こる"],["upgrade","～の性能［品質など］を上げる"],["sanitation","（公衆）衛生"],["flare","（ぱっと燃え上がる）炎"],["remedy","薬、治療"],["witness","～を目撃する"],["ominous","不吉な"],["synthesize","～を総合する"],["torture","拷問"],["thesis","（学位）論文"],["bounce","〈ボールなどが〉跳ね返る、〈音などが〉反響する"],["exploit","（利益を得るために）～を利用する"],["ingest","〈食品・薬品など〉を摂取する"],["generosity","気前のよさ、寛大さ"],["disorder","（心身の）障害"],["amplify","〈信号・音など〉を増幅する"],["initiative","自発性；主導権"],["negotiate","交渉する、協議する"],["droop","（だらりと）垂れる、下向きになる"],["repeal","〈法律など〉を廃止する、撤廃する"],["congregate","集まる、集合する"],["crest","尾根、波がしら"],["gratitude","感謝、感謝の気持ち"],["annotation","注釈"],["monitor","～を監視する"],["agonize","苦悩する、苦悶する"],["renew","〈免許・契約など〉を更新する、継続する"],["instrumental","非常に重要な役割を果たす、役に立つ"],["setback","（進歩・発展の）障害、妨げ"],["stout","頑丈な、がっしりした"],["outpace","～より速く走る、～より速く発展する"],["alignment","整列"],["conflict","対立、衝突、紛争"],["ensue","続いて起こる"],["eradicate","〈病気・社会問題・害虫など〉を根絶する、撲滅する"],["fumigate","〈部屋など〉を燻蒸(くんじょう)消毒する"],["blink","まばたきをする"],["shallow","浅い"],["mumble","（～を）つぶやく、ぶつぶつ言う"],["scheme","陰謀"],["assault","〈人〉を襲う、暴行する"],["falsify","〈書類など〉を偽造する、改ざんする"],["incessant","絶え間のない、ひっきりなしの"],["diverge","（コースなどから）それる；〈道・線路などが〉分岐する"],["cult","カルト、カルト教団"],["dissolve","〈固体〉を（液体の中に）溶かす；〈固体が〉（液体に）溶ける"],["numb","まひした、しびれた"],["devious","〈人・行為などが〉悪質な、狡猾(こうかつ)な"],["rubbish","ごみ"],["errand","使い、使い走り"],["corridor","（建物・列車などの）廊下、通路"],["clause","（条約・契約書などの）条項、箇条"],["invincible","〈人・軍などが〉無敵の"],["antiquity","古代の遺物［遺跡、美術品］"],["dispel","〈不安・恐怖など〉を払いのける"],["envious","うらやましく思っている"],["horizontal","水平の"],["surveillance","（容疑者・囚人などの）監視、見張り"],["discord","不一致、不調和"],["cram","～を詰め込む"],["undergo","〈試練・変化など〉を経験する"],["probe","調査"],["solemn","〈儀式などが〉厳粛な、厳かな"],["subtract","～を引く、減じる"],["council","（地方自治体の）議会"],["cooperative","協力的な、協同の"],["burden","負担、（精神的な）重荷"],["currency","通貨"],["torment","～を苦しめる、悩ませる"],["inception","（組織などの）発足、開始"],["triumph","（大）勝利"],["confidential","〈情報が〉機密の、マル秘の"],["outburst","（感情の）爆発"],["extinct","絶滅した"],["momentary","瞬間の"],["breakout","脱走、脱獄"],["celebrity","有名人"],["improvise","（～を）即興で作る"],["infamous","悪名高い"],["subordinate","下位の人、部下"],["commit","〈罪・過失など〉を犯す"],["adapt","適応する"],["inclusive","含めて、込みの"],["stationary","〈乗り物・人などが〉静止した、動かない"],["banish","〈人〉を追放する"],["legitimate","合法的な"],["influential","影響力の大きい"],["peculiar","奇妙な、普通でない"],["envoy","使節、使者"],["predict","～を予測する、予言する"],["innovation","革新、（新しい事物の）導入"],["rivalry","競争、争い"],["communal","共同の、共有の"],["recession","（一時的な）不景気、不況"],["federal","連邦の、連邦政府の"],["occupancy","（土地・家などの）占有、居住"],["perspire","汗をかく、発汗する"],["cumulative","〈効果・影響などが〉しだいに増える"],["manipulate","〈人・世論・価格など〉を操作する、巧みに仕向ける"],["abstract","抽象的な、概念上の"],["facade","うわべ、表面"],["rampage","凶暴に暴れること"],["profound","〈影響などが〉深刻な、重大な"],["brag","自慢する"],["sweep","〈嵐・疫病などが〉激しい勢いで襲来する、広がる"],["eternity","永遠、永久"],["conscience","良心、善悪の判断力"],["contend","…と強く主張する"],["vomit","吐く、嘔吐(おうと)する"],["utensil","（特に台所の）用具、器具"],["disperse","〈群衆など〉を追い散らす；〈群衆が〉分散する"],["manuscript","（手書きの）原稿"],["anonymous","匿名の"],["delirious","精神が錯乱した"],["reminiscent","連想させる、思い出させる"],["appropriate","適切な、ふさわしい"],["plot","～を企む"],["recess","休憩、休み時間"],["cater","要求を満たす"],["reproduce","繁殖する；～を繁殖させる"],["stunt","〈成長・発達など〉を妨げる"],["utterance","言葉、発言"],["immovable","動かせない、固定された"],["extinguish","〈火・光など〉を消す"],["centralize","〈権力など〉を集中させる"],["identify","～を特定する"],["feast","祝宴、宴会"],["candid","率直な、遠慮のない"],["portion","部分、一部分"],["irreversible","元に戻せない、不可逆の"],["acoustic","音の、音響の"],["gravitate","（場所・ものなどに）引き寄せられる"],["juvenile","青少年の"],["inhabitant","住民、住人、生息動物"],["creditor","債権者、貸し主"],["regulate","～を規制する、取り締まる"],["jumble","〈ものが〉ごちゃ混ぜになる、〈考えが〉混乱する"],["pinch","～をつまむ、つねる"],["eerie","不気味な、薄気味悪い"],["tactical","戦術の"],["variable","変わりやすい、変動する"],["saturate","～を濡らす、浸す"],["disregard","～を無視する、軽視する"],["hail","あられ、ひょう"],["soothe","〈人など〉をなだめる、落ち着かせる"],["showdown","（決着をつけるための）対決、天王山"],["colonize","～を植民地化する"],["solitude","孤独、一人きりでいること"],["formalize","～を正式なものとする"],["muddle","～をごちゃ混ぜにする、混同する"],["symptom","（病気の）兆候、症状"],["boundless","際限のない、無限の"],["overlook","～を見落とす、見過ごす"],["unperturbed","取り乱さない、冷静な"],["renounce","〈権利・所有物など〉を放棄する"],["detonate","〈爆弾など〉を爆発させる"],["era","時代、時期；～時代"],["overlap","重なり合う、一部が重複する"],["paralyze","～をまひさせる"],["swamp","沼地、湿地"],["repel","～を追い払う、撃退する"],["closure","閉鎖、閉店"],["personnel","人事部、人事課"],["inanimate","生命のない、無生物の"],["gaudy","派手な、けばけばしい"],["chronicle","～を年代記［年代順］に記録する"],["disown","～を自分の所有物と認めない、～との関係を否定する"],["proportion","割合、比率"],["posture","（体の）姿勢"],["reveal","～を明らかにする"],["retain","～を保つ、保持する"],["descent","血統、家系"],["ignorance","無知、無学"],["mundane","平凡な、つまらない"],["subsistence","必要最低限の生活［生計］"],["noble","崇高な、気高い"],["commute","通勤"],["ferocious","〈人・動物が〉凶暴な、どう猛な"],["discern","〈違いなど〉を判別する、識別する"],["phonetic","音声（学）の、発音に関する"],["infrastructure","インフラ、社会基盤設備"],["distinct","別個の、独特な、まったく異なる"],["slam","〈ドア・窓など〉をバタン［ピシャリ］と閉める"],["sophisticated","洗練された、〈技術などが〉精巧な"],["revitalize","～に新しい活力を与える、～を活性化する"],["cautious","用心深い、慎重な"],["dilution","希釈"],["gauge","～を慎重に判断する"],["comparable","匹敵する、似通った"],["massive","〈規模・量などが〉大きい"],["resilient","回復力がある、立ち直りが早い"],["abuse","乱用、不正使用"],["transient","放浪者、流れ者"],["enact","〈法律など〉を制定する"],["stimulate","〈器官など〉を刺激する、活性化する"],["aggressive","攻撃的な"],["compile","〈情報など〉をまとめる、編集する"],["quaint","（古風で）趣のある"],["revise","～を修正する、改訂する"],["decline","減少する、低下する"],["static","停滞した、不活発な"],["revenue","収入、歳入"],["inheritance","相続、遺産"],["detachment","超然；無関心"],["erratic","一定しない、不規則な"],["circumstance","状況、事情"],["meditate","瞑想(めいそう)する"],["constraint","制約、制限"],["fraction","ごく一部"],["remarkable","注目すべき、並外れた"],["prohibit","〈法・規則などが〉～を禁止する"],["swap","～を交換する"],["entice","～を誘惑する"],["hereditary","遺伝性の"],["flock","（ヒツジ・ヤギ・鳥などの）群れ"],["sprout","発芽する"],["inject","〈薬など〉を注射する、注入する"],["swerve","（急に）向きを変える、ハンドルを切る"],["upscale","高所得者（向け）の、高級な"],["upcoming","間近に迫った、来たるべき"],["constellation","星座"],["disprove","〈理論など〉の誤りを証明する"],["imposing","〈建物・人などが〉堂々とした、立派な"],["preliminary","前置き、下準備"],["exposure","（日光・風雨・危険などに）さらされること"],["upheaval","大変動、激変"],["customary","習慣的な、慣習になっている"],["rebound","〈価格・価値などが〉再び上昇する、回復する"],["replenish","～を補充する"],["commodity","商品、売買品"],["vicinity","付近、近辺"],["credibility","信頼性、信用"],["surrounding","周囲の、周辺の"],["publicity","注目、評判"],["bundle","束、包み"],["agenda","議題、議題一覧"],["drain","排水管［口］、排水設備"],["scam","詐欺、ぺてん"],["attendant","係員、接客係"],["lobby","議員に働きかける、ロビー活動をする"],["empathy","共感、感情移入"],["breed","～を繁殖させる、飼育する"],["emulate","〈尊敬する人・立派なもの〉を見習う、まねる"],["relevant","（当面の問題に）関連のある、適切な"],["breakup","（関係などの）解消、破局"],["terminate","～を終わらせる、〈契約など〉を打ち切る"],["sensation","大評判（の人・もの）"],["upturn","上昇、好転"],["pretense","ふり、見せかけ"],["extract","（別の物質から）〈物質〉を抽出する、採取する"],["caption","（写真などの）説明文、キャプション"],["deadlock","（交渉などの）行き詰まり、こう着状態"],["submerge","～を水没させる；水没する"],["condemn","〈人・行為〉を非難する、とがめる"],["reliable","〈人・ものが〉信頼できる"],["undermine","〈自信・権威など〉をひそかに傷つける、〈健康など〉をむしばむ"],["utility","（電気・ガス・水道などの）公共事業；公共料金"],["rite","儀式"],["backlog","（仕事などの大量の）やり残し、未処理分"],["bow","お辞儀をする、頭を下げる"],["wholesome","〈食べ物・運動などが〉健康によい"],["sly","ずるい、狡猾(こうかつ)な"],["scope","範囲、領域"],["freight","運送貨物"],["likelihood","可能性"],["incisive","〈言葉・批評などが〉鋭い、的確な"],["sublime","荘厳な、雄大な"],["referral","（専門医などへの）委託、紹介"],["haunt","～にとりつく、化けて出る"],["sufficient","十分な"],["activate","～を活性化する"],["terrain","地形、地勢、土地"]]],["Unit13-14",[["affordable","手ごろな価格の、安価な"],["guarantee","～を保証する"],["medication","薬、薬物（治療）"],["routine","決まりきった、いつもの"],["longevity","長寿"],["knowledgeable","精通した、熟知した；博識な"],["nonetheless","それにもかかわらず"],["relocate","移転する、移住する；～を移転［移住］させる"],["relatively","比較的"],["budget","予算"],["requirement","必要条件"],["row","列、並び"],["lessen","～を少なくする、減らす"],["implement","〈計画・政策など〉を実行する、履行する"],["outlive","～より長生きする"],["burial","埋葬、（埋葬による）葬儀"],["promotion","昇進"],["eligible","資格のある、適格な"],["capability","能力、性能"],["plantation","（熱帯地方の）大農園、大農場"],["technically","技術的には"],["outbreak","（伝染病・戦争などの）発生、勃発"],["finance","［finances］資金、財源"],["moisture","水分、湿気"],["overall","全体の、総合的な"],["beneficial","有益な、役に立つ"],["costly","費用のかかる、高価な"],["analyze","～を分析する"],["wilderness","荒野、手つかずの自然"],["definitely","確かに、間違いなく"],["noticeable","目立つ、顕著な"],["storage","保管、貯蔵；保管スペース"],["criterion","標準、基準"],["sensitive","敏感な、影響を受けやすい"],["engage","従事する、携わる"],["offspring","（人・動物の）子、子孫"],["fortune","大金、財産"],["widespread","広範囲にわたる、普及している"],["buildup","（量・レベルなどの）増加、高まり"],["allowance","（子どもの）小遣い"],["modernization","近代化、現代化"],["acclaim","（人・業績に対する）称賛、歓呼"],["extend","〈影響・支配などが〉及ぶ；〈影響・支配など〉を拡大する"],["awareness","意識、認知"],["inspection","検査、点検"],["acceptance","受け入れること、容認"],["define","～を定義する"],["soar","〈数値・温度・価格などが〉急上昇する"],["satellite","人工衛星"],["reduction","減少；割引；削減"],["dairy","乳製品の"],["crisis","危機"],["participation","参加、加入、関与"],["checkup","健康診断"],["gender","（社会的・文化的）性別、ジェンダー"],["permanently","永久に、永続的に"],["significance","意義、意味"],["forbid","〈権威者・法などが〉～を禁じる、許さない"],["ban","～を禁止する"],["prerequisite","必要条件、前提条件"],["leftover","（料理の）残り物"],["toxic","毒性のある、有毒な"],["manufacture","～を製造する"],["substantial","相当な、かなりの"],["fluid","液体、流動体"],["arise","〈問題が〉生じる"],["workforce","（国・地域の）労働力、労働人口"],["multiple","多数の、複数の"],["roam","（～を）歩き回る、放浪する"],["accomplishment","業績、成果"],["strand","（ひも・ロープなどを構成する）糸、繊維"],["returnee","帰国者、帰国子女、帰還者"],["oppose","～に反対する"],["hybrid","混成種"],["mine","鉱山"],["chronic","〈病気が〉慢性の"],["consistency","（方針・行動などの）一貫性"],["outlet","直販店；販路"],["discipline","学科、学問分野"],["competitive","競争の、競技の；競争の激しい"],["bully","～をいじめる"],["incredible","信じられない（ほどの）、信じがたい"],["clinical","臨床の"],["peer","（地位・年齢などが）同等の人、仲間；同級生"],["premium","高級な、高品質の"],["uncover","～を発掘する、発見する"],["indigenous","（ある土地に）固有の、先住の"],["province","（カナダなどの）州、（中国の）省"],["alert","警戒した、油断のない"],["debt","負債、借金"],["deserve","～に値する"],["impersonal","人間味のない、機械的な"],["retail","小売りの"],["intermediate","〈程度が〉中級の"],["luxury","豪華さ、ぜいたく；［形容詞的に］豪華な、ぜいたくな"],["fame","名声"],["existence","存在"],["artificial","人工の、人工的な"],["poll","世論調査、アンケート"],["register","（～を）登録する"],["pottery","陶器類"],["efficient","効率のよい"],["address","〈問題など〉に取り組む"],["investigation","取り調べ、調査"],["pedestrian","歩行者"],["notable","注目に値する"],["welfare","福祉"],["removal","（不要なものの）除去、撤去、摘出"],["sector","（事業・産業の）部門、分野"],["behavioral","行動の、行動に関する"],["equality","平等"],["intense","〈感情・運動などが〉激しい"],["fake","偽の、偽造の"],["humiliate","〈人〉に恥をかかせる"],["convention","（各種団体による定期的な）大会、集会"],["mortgage","住宅ローン"],["session","会合、集会"],["bond","きずな、結びつき"],["straightforward","わかりやすい、簡単な"],["debris","がれき、残骸"],["disband","〈組織など〉が解散する；〈組織など〉を解散する"],["questionable","疑わしい、疑問の余地がある"],["recognition","認知、（事実・価値を）認識すること"],["overcome","〈困難など〉を乗り越える、克服する"],["fossil","化石"],["protective","保護する、保護用の"],["outset","最初、出だし"],["subject","被験者"],["approximately","およそ、約"],["candidate","候補者"],["colleague","同僚"],["spell","（天候の）一続きの期間"],["highlight","～を強調する、目立たせる"],["illegal","違法の、非合法の"],["tip","先端、（島の）突端"],["overestimate","～を過大評価する"],["urge","～に強く勧める"],["shrink","縮む、縮小する"],["temper","冷静、平常心"],["makeup","構造、構成"],["immune","免疫のある"],["opponent","（試合などの）相手、対戦者"],["corporation","企業、株式会社"],["rigorous","厳しい、厳格な"],["executive","経営幹部、重役"],["worsen","悪化する"],["potential","（将来的に）可能性のある、見込みのある"],["slavery","奴隷制度"],["facility","設備、施設"],["stability","安定"],["justify","～を正当化する、弁明する"],["supervise","〈人・作業など〉を監督する、管理する"],["alternative","別の、代わりとなる"],["consume","～を食べる、摂取する"],["detect","～を検出する、発見する"],["preserve","～を保存する、保護する"],["impressive","印象的な、深い感銘を与える"],["minimum","最小限の、最低限の"],["reference","参照、参考"],["infant","幼児、乳児"],["latitude","緯度"],["insurance","保険"],["fancy","高級な、豪華な"],["vegetation","（ある地域に生育する）植物、植生"],["compassion","同情、思いやり"],["firsthand","じかの、直接の"],["theft","盗み、窃盗"],["strenuous","〈運動などが〉激しい；大変な努力を要する"],["bargain","格安品、掘り出し物；［形容詞的に］格安の"],["intake","（食べ物などの）摂取（量）"],["outstanding","傑出した、特にすぐれた"],["productivity","生産性"],["priority","優先事項"],["strategy","戦略、方策"],["shift","～を転換する、移す"],["temporary","一時的な、臨時の"],["faith","宗教、信仰"],["revive","～を蘇生(そせい)させる、生き返らせる"],["regarding","～に関しての、～についての"],["prey","えじき、獲物"],["deposit","預金、預け入れ"],["possession","所有物"],["problematic","問題のある、解決の難しい"],["contribution","貢献、寄与"],["speculation","推測、憶測"],["cuisine","（特定の地域・文化の）料理"],["voucher","（商品・サービスなどの）引換券、クーポン"],["lawsuit","（民事）訴訟"],["representative","（客に対応する）販売員、担当者"],["clue","（問題などを解く）手がかり、糸口"],["absorb","～を吸収する"],["divorce","離婚"],["long-term","長期の"],["well-being","幸福、健康"],["expenditure","費用"],["warehouse","倉庫"],["likewise","同様に"],["recipient","受け手、受益者"],["ultimately","究極的には、結局のところ"],["invest","（～を）投資する"],["profession","職業、専門職"],["domestic","国内の"],["enthusiastic","熱中した、熱狂的な"],["outcome","結果、成果"],["intensive","集中的な"],["applicant","応募者"],["invaluable","非常に貴重な、計り知れない価値のある"],["premise","前提、根拠"],["leverage","影響力、効力"],["enormous","巨大な、莫大な"],["overly","過度に、あまりにも"],["primarily","主として、第一に"],["counterpart","同等物、よく似た人［もの］"],["ongoing","進行中の、継続している"],["characteristic","特徴、特色"],["isolate","～を分離する、孤立させる"],["overtake","（性能・数量などで）～に勝る、～を上回る"],["criticism","批評、批判"],["property","財産、所有物"],["due","〈支払い・提出などが〉期限の来た"],["livelihood","生計、生活手段；暮らし"],["kidnap","〈人〉を誘拐する"],["landscape","（一目で見渡せる陸地の）風景、景観"],["agricultural","農業の"],["populate","〈場所〉に居住する、生息する"],["loyalty","誠実、忠誠（心）"],["comprehensive","包括的な、網羅的な"],["script","文字（体系）"],["workout","練習、運動、（スポーツの）トレーニング"],["tense","〈人が〉緊張した"],["consequently","その結果、したがって"],["qualified","資格のある、適任の、能力のある"],["numerous","多数の、多くの"],["legislation","法律、立法"],["statistics","統計"],["excel","（ほかより）すぐれる"],["sewage","下水、汚水"],["reminder","思い出させるもの、注意、メモ"],["climatic","気候（上）の、風土的な"],["curious","好奇心の強い、せんさく好きな"]]],["Unit15-17",[["bounce back","（病気・打撃などから）立ち直る、回復する"],["figure on ～","～を想定する、見込む"],["tie up","〈もの〉をしっかりくくる；〈船〉を係留する"],["split up","〈夫婦・カップルが〉別れる"],["call for ～","～を必要とする"],["close in","近づいてくる、迫ってくる"],["go for ～","～を手に入れようとする"],["get into ～","～に興味を持つ、はまる"],["back off","口出し［干渉］をやめる"],["kick back","リラックスする、休憩する"],["clean out","〈部屋など〉の中をきれいにする、～をからにする"],["bring out","〈才能・特徴など〉を引き出す"],["let off","～を罰さない、釈放する"],["set in","〈不快な天候・病気などが〉始まる、到来する"],["sink in","〈言葉・ことなどが〉十分理解される"],["draw up","〈文書など〉を作成する"],["get on with ～","〈中断していたこと〉を続ける"],["set off","（旅行などに）出発する"],["let out","～を外に出す"],["pin down","〈事実・原因など〉を知る、突き止める"],["tell off","〈人〉を叱る"],["jump at ～","〈チャンスなど〉に飛びつく"],["scale down","〈事物の規模・程度〉を縮小する"],["rack up","〈人・会社などが〉〈利益・得点など〉を得る、積み重ねる"],["endear A to B","AをBに好かれるようにする"],["come before ～","〈人・案件などが〉（審判・検討のため）～に出る、出される"],["check up on ～","〈人〉の行動を調べる、様子を見る"],["whip up","〈感情・興味など〉をかき立てる"],["mark down","～を値下げする"],["go by","通り過ぎる；〈時間が〉過ぎる"],["make over","～を作り変える、作り直す"],["face off","対決する"],["opt for ～","～を選択する、選ぶ"],["blow up","かんしゃくを爆発させる"],["wave off","（手を振って）〈考え・申し出など〉を拒む、退ける"],["take in","～を見に行く、見物する"],["catch on","理解し始める"],["leave off","やめる、中断する"],["mark out","～を区切る"],["ease into ～","〈仕事など〉に徐々に慣れる"],["get by","何とか生活する"],["settle down","〈人・気持ちなどが〉落ち着く"],["cut in","（会話などに）口をはさむ、割って入る"],["wear off","〈痛み・効果・感情などが〉薄れる、次第に消える"],["take on","〈人〉を雇う、採用する"],["come down to ～","〈問題・困難などが〉～に帰着する、集約される"],["stand down","職［地位］から身を引く"],["throw off","〈服など〉を脱ぎ捨てる"],["pass out","気絶する、意識を失う"],["give out","〈装置・体の一部などが〉動かなくなる、故障する"],["head out","出発する、出かける"],["pile in","どやどやと中に入る"],["spell out","～をはっきりと説明する"],["slip by","〈時間などが〉いつの間にか過ぎる"],["cough up","〈金など〉をしぶしぶ出す"],["chip in","〈仲間などが〉金を出し合う"],["stand up to ～","〈人・組織など〉に恐れずに立ち向かう"],["roll up","〈そで・裾など〉をまくる"],["tuck away","〈金など〉をしまい込む"],["shake up","〈組織など〉を改革［再編］する"],["knock down","〈建物・機械など〉を取り壊す、解体する"],["spring from ～","～から生じる、～に起因する"],["head off","～を阻止する、阻む"],["come through","（必要なもの・求められたものを）提供する、期待に応える"],["look out for ～","～に気をつける、注意する"],["pack up","〈もの〉をかばんに詰める"],["back up","～を支持する、支援する"],["map out","〈計画〉を立てる、～を綿密に計画する"],["fix up","〈家など〉を修理［改装］する"],["die down","〈雨・風・音などが〉弱まる"],["act up","〈病気・症状などが〉ぶり返す、再発する"],["pull back","手を引く、撤退する"],["hammer out","（徹底的に検討して）〈結果・政策など〉を考え出す"],["burn out","燃え尽きる；～を燃やし尽くす"],["stop over","（旅行の途中などに）立ち寄る、一時滞在する"],["grow on ～","〈人〉の心を引くようになる"],["scoop up","～をすくい取る、すくい上げる"],["fall back on ～","～に頼る、～を当てにする"],["see through ～","〈うそなど〉を見抜く"],["turn in","寝る"],["turn over","～を熟考する、じっくり考える"],["give over","～を任せる、委ねる"],["take to ～","～が好きになる"],["break out","〈火事・戦争・伝染病などが〉急に始まる、勃発する"],["answer for ～","〈過失・行為〉の責任を取る"],["settle for ～","～に甘んじる、～でよしとする"],["get down to ～","〈仕事など〉に（本腰を入れて）取りかかる"],["fall off","〈数量が〉減少する；〈質などが〉低下する"],["follow up","追跡調査をする"],["cut back on ～","～を削減する、減らす"],["dispose of ～","〈不要物など〉を処分する、処理する"],["go back on ～","〈約束・協定など〉を破る"],["dream up","〈（ばかげた）計画・考えなど〉を思いつく"],["pull in","〈列車が〉駅に着く、〈バスが〉バス停に着く"],["round out","～を（いい形で）締めくくる"],["stick with ～","〈方針など〉を変えない、～にこだわる"],["stir up","（故意に）〈論争・もめ事〉を引き起こす"],["pass off","〈偽物〉をつかませる"],["step up","～を強化する"],["hang around （～）","（～を）ぶらつく、うろつく、（～に）たむろする"],["get in on ～","〈活動など〉に加わる、〈市場〉に参入する"],["wrestle with ～","〈問題など〉に取り組む、～と格闘する"],["break down","（説得・圧力などに）屈する"],["press for ～","～を強く求める、迫る"],["pass on","～を渡す、伝える"],["miss out","（機会・楽しいことなどを）逃す、経験し損なう"],["hang onto ～","～を（手放さずに）持ち続ける、～に執着する"],["lift off","〈飛行機・ロケットなどが〉離陸する、打ち上げられる"],["pull over","車を端に寄せて止める"],["kick off","～を始める；始まる"],["deal out","～を分配する"],["carry away","［get carried away］夢中になる、興奮する"],["track down","～を追跡して捕まえる、追い詰める"],["fall for ～","〈策略・宣伝など〉にだまされる、引っかかる"],["doze off","うたた寝する、まどろむ"],["turn away","（満員などの理由で）〈人〉を中に入れない；〈人〉を追い払う"],["happen on ～","〈もの〉を偶然見つける、〈人〉に出くわす"],["kick around","〈案・計画など〉についてあれこれ検討する"],["build up","～を発達させる、増やす"],["stick up for ～","〈他人が支持しないもの〉を支持する、擁護する"],["look down on ～","〈人〉を見下す、さげすむ"],["call on ～","〈人〉を訪問する"],["pull through","健康を回復する、何とか持ち直す"],["carry through","（約束などを）実行する"],["put through","〈電話・人〉を（相手に）つなぐ"],["bear with ～","〈人〉に我慢してつき合う"],["pass for ～","～で通用する、～として通る"],["play out","〈出来事などが〉展開する；～を展開する"],["live up to ～","〈期待など〉に沿う"],["lay into ～","〈人〉を非難する、殴打する"],["drag out","～をだらだらと長引かせる"],["sell out","信念を曲げる、裏切る"],["live down","〈自分の愚行・恥など〉を忘れる"],["talk A into doing","～するようにAを説得する"],["come by ～","（偶然・運よく）～を手に入れる"],["make off with ～","〈もの〉を持ち去る、盗む；〈人〉を誘拐する"],["fire up","気合が入っている、張り切っている"],["relate to ～","～に共感する、～の気持ちがわかる"],["grow into ～","成長して～になる"],["roll in","〈お金・手紙・ものが〉大量にやって来る"],["come into ～","〈金・財産など〉を相続する"],["set down","〈考え・経験など〉を書き留める"],["get away with ～","〈悪いこと〉をして無事に逃れる"],["hold up","（よい状態で）続く、持ちこたえる"],["rough up","〈人〉に暴力をふるう"],["gear up","準備をする"],["rise above ～","〈困難など〉を克服する"],["turn down","〈音量・火力など〉を小さくする、弱める"],["hold back","ためらう、ちゅうちょする"],["carry over","持ち越される、残存する；～を持ち越す"],["pick over","（数あるものの中から）～を丹念に選ぶ"],["weigh on ～","〈問題・責任などが〉～にのしかかる、～を圧迫する"],["take up","（趣味として）～を始める"],["hold over","〈決定など〉を持ち越す、先送りにする"],["step out","（建物などを）出る、（乗り物から）降りる"],["give in","（要求などに）屈する、折れる"],["phase out","～を段階的に停止［廃止］する"],["get around","〈老人・病人などが〉歩き回る、出歩く"],["dry up","〈お金などが〉尽きる、枯渇する"],["sign out","〈本など〉を署名して借り出す"],["come off","（言動から）（～のように）見える、思える"],["tell on ～","〈人のこと〉を言いつける、告げ口する"],["fall apart","（古さ・ずさんな作りのために）ばらばらになる"],["clear out","〈家・部屋など〉を（不用品を片づけて）きれいにする"],["check off","～にチェック済みの印をつける"],["act out","〈過去の出来事など〉を演じてみせる"],["add up to ～","結局～ということになる"],["tear down","〈建物など〉を取り壊す"],["stem from ～","～に由来する"],["break away from ～","（レースで）〈集団〉から抜け出す"],["shut out","〈光・音・景色など〉を遮る"],["let up","気を緩める、手を抜く"],["spring up","急に現れる、次々に誕生する"],["stack up","〈車が〉渋滞する；〈ものが〉増え続ける"],["pay off","〈計画・努力などが〉実を結ぶ"],["brush off","～を拒絶する、はねつける"],["rule out","〈可能性など〉を排除［除外］する"],["drag on","長引く、だらだら続く"],["step down","（職・地位などを）辞職する、降りる"],["eat up","〈時間・財産など〉を食い尽くす"],["pass down","〈知識など〉を伝える"],["branch off","枝分かれする、分岐する"],["stand over ～","〈人〉を（そばで）監視する"],["smooth over","〈言い争いなど〉を丸く収める"],["throw up","吐く、嘔吐(おうと)する"],["try out","〈人・方法・装置など〉を（機能するか）テストする"],["cover up","〈事実・失敗・本心など〉を隠す"],["fall under ～","～の分類に入る"],["catch up on ～","〈最新情報・人の近況など〉を知る"],["drive out","〈人・もの〉を追い出す、駆逐する"],["count on ～","～を当てにする、～に頼る"],["force down","〈飲食物〉を無理やり飲み込む"],["put in","〈設備など〉を備えつける"],["run through ～","〈本・提案など〉をざっと調べる、目を通す"],["contend with ～","〈問題・困難など〉に取り組む、〈人〉に対処する"],["tighten up","〈規則・警備など〉を強化する、厳しくする"],["make do with ～","～で間に合わせる"],["push for ～","～を強く求める"],["lay down","〈規則など〉を設定する、定める"],["point to ～","～を示す、表す"],["go astray","〈ものが〉行方不明になる、盗まれる"],["go over ～","～を復習する、見直す"],["touch up","～を手直しして改良する"],["go under","〈会社などが〉倒産する"],["level off","成長が止まる、〈発展中のものが〉伸びが弱まる"],["wrap up","〈仕事・議論など〉を終える、やり遂げる"],["set out to do","～し始める、～することに着手する"],["live on ～","〈一定の金額〉で暮らしを立てる"],["show up","現れる、来る"],["stop up","〈パイプなど〉を詰まらせる、ふさぐ"],["go through with ～","〈難しい計画・約束など〉を遂行する"],["fall away","〈感情・音などが〉（徐々に）弱まる、なくなる"],["put forward","〈意見・案など〉を出す、提案する"],["round up","〈人・動物たち〉を駆り集める"],["attend to ～","〈客〉の相手をする"],["bottom out","〈景気・相場などが〉底をつく"],["break up","（関係・愛情などが）終わる、（恋人などと）別れる"],["pick through ～","〈場所など〉を探す"],["head off to ～","～に進む、向かう"],["play up","～を（大げさに）強調する、誇張する"],["back down","引き下がる、後退する"],["make up for ～","～を補う、つぐなう"],["give off","〈におい・気体・熱など〉を発する、出す"],["bet on ～","～に賭ける"],["break off","急に話をやめる"],["grow out of ～","成長して〈癖・興味〉がなくなる"],["pull up","〈運転手が〉車を止める"],["turn out","〈多くの人が〉出かける、集まる"],["slip on","〈服〉をさっと着る、〈靴〉をさっと履く"],["nod off","うとうとする、居眠りする"],["blow over","〈悪い事態などが〉解消される、収まる"],["hold out","〈人が〉持ちこたえる、頑張る"],["pull off","〈困難なこと〉を苦労して成し遂げる"],["lock A in B","AをBに閉じ込める"],["settle in","（新しい家・仕事・環境などに）落ち着く、慣れる"],["set up","〈組織・制度など〉を設立する"],["wash away","〈雨などが〉～を押し流す、洗い流す"],["kick in","効果が出始める"],["stick by ～","〈困っている人〉を支援し続ける"],["send out for ～","～の出前を頼む"],["run out","〈時間・金・忍耐などが〉尽きる、なくなる"],["branch out","（事業などを）拡大する、手を広げる"],["tip over","倒れる、ひっくり返る；～をひっくり返す"],["put up with ～","～を耐える、我慢する"],["adhere to ～","〈規則など〉を忠実に守る；〈考えなど〉を信奉する"],["let down","〈人〉を失望させる、〈人〉の期待を裏切る"],["stumble on ～","〈もの・人など〉に偶然出くわす"],["pitch in","協力する、援助する"],["write back","（手紙で）返事を書く"],["wind up","（意に反して）～することになる、最後には～に至る"],["make up","仲直りする"],["watch over ～","〈人・動物など〉を見守る、監視する"],["narrow down","〈範囲など〉を絞る、狭める"],["want for ～","〈必要なもの〉がない、～を欠いている"],["set aside","（ある目的のために）〈時間・場所・金など〉を取っておく"],["put forth","〈計画・説明など〉を示す、提案する"],["deal in ～","〈商品〉を扱う、商う"],["run down","〈車・運転手が〉〈人・動物など〉をはねる"],["derive from ～","～に由来する、～から派生する"],["wash down","〈大きなもの〉を洗い流す"],["come along","はかどる、進展する"],["tuck in","（シーツなどで）〈子どもなど〉を心地よくくるむ"],["burn off","〈カロリーなど〉を燃やす、消費する"],["speak for ～","〈人・集団〉の意見［気持ち］を代弁する"],["be drawn into ～","～に巻き込まれる"],["fall through","〈計画などが〉失敗に終わる"],["blast off","〈ロケットなどが〉発進する"],["feel out","〈状況・人の意向など〉を探る、知ろうとする"],["pass up","〈機会など〉を見送る、みすみす逃す"],["drive off","〈敵など〉を追い払う"],["dish out","～を（よく考えずに）配る、与える"],["stick around","居残る、その場でしばらく待つ"],["buy out","～の事業［株など］を買い取る"],["feel for ～","〈人〉に同情する、〈人〉を気の毒に思う"],["turn around","好転する、上向く"],["hand off","～を手渡す、引き渡す"],["see about doing","～する手配をする"],["turn to ～","（助けなどを求めて）～を頼る、～に救いを求める"],["give away","〈秘密など〉をもらす、暴露する"],["draw on ～","〈知識・経験など〉を生かす"],["cross out","～を（線を引いて）消す、リストから外す"],["go at ～","～に取り組む"],["cling to ～","～にしがみつく"],["measure up to ～","〈期待・水準など〉に達する"],["shape up","きちんと振る舞う、（仕事・勉強を）頑張る"],["hang on ～","～次第である、～にかかっている"],["rub in","〈人の嫌がること〉を繰り返し言う"],["water down","～の内容を薄める、～に手心を加える"],["break in on ～","〈会話〉に口をはさむ、割り込む"],["size up","〈人・価格・情勢など〉を判断する、見極める"],["do away with ～","〈規則など〉を廃止する"],["free up","〈時間・空間〉を空ける"],["stay off ～","〈体によくないもの〉を食べない、飲まない"],["fall on ～","〈責任・費用などが〉〈人〉に降りかかる、課せられる"],["keep up","（周りに）遅れずについていく"],["single out","～を選び出す"],["come down with ～","〈軽い病気〉にかかる"],["go along with ～","〈人・提案・考えなど〉に同意する、賛同する"],["crack up","〈人〉を大笑いさせる；大笑いする"],["hold down","〈人〉を押さえつける"],["drive up","〈価格・費用など〉を押し上げる、つり上げる"],["straighten out","〈混乱・難局・問題〉を収拾する、解決する"],["pile up","〈ものが〉積もる、たまる"],["bring up","〈話題など〉を持ち出す、提起する"],["mess with ～","～をいじくる、～に手を出す"],["scratch out","〈名前など〉を線を引いて消す、抹消する"],["lay off","（不況などで）〈人〉を解雇する"],["feed off ～","～を食料にする、糧にする"],["send for ～","～を注文する、取り寄せる"],["call off","〈計画など〉を中止する、とりやめる"],["rip off","～をはぎ取る"],["cover for ～","〈人〉の代わりを務める"],["act on ～","～に基づいて行動する"],["skim over","（要点をつかむために）～にざっと目を通す"],["bring on","〈病気・災害など〉を引き起こす"],["tune up","〈エンジン・機械など〉を整備する"],["buy up","〈土地など〉を買い占める"],["fill in for ～","〈人〉の代理を務める"],["sit by","傍観する、手をこまねいている"],["shove off","離れる、出ていく"]]],["Unit18-20",[["bring off","〈難しいこと〉をうまく成し遂げる"],["pass over","〈人〉を（昇進などの候補から）外す"],["air out","〈部屋など〉を換気する"],["sum up","～を要約する、かいつまんで話す"],["bank on ～","～を当てにする、～に頼る"],["get at ～","～をほのめかす、暗に言う"],["touch on ～","〈話題など〉に触れる、言及する"],["sit in on ～","〈会議・授業など〉を傍聴［聴講］する"],["shove aside","～を脇に押しやる、無視する"],["flag down","〈タクシーなど〉を手を挙げて止める"],["win over","～を説得して味方につける、説き伏せる"],["tune in","（局・番組などに）ダイヤル［チャンネル］を合わせる"],["make out","～が何とかわかる、～を何とか理解する"],["hold off","すぐにしない（で待つ）"],["talk up","〈人・もの〉を実際よりよいように説明する"],["count for ～","～の価値がある"],["liquid","液体、流動体"],["locomotive","機関車"],["hump","（ラクダなどの）こぶ"],["reindeer","トナカイ"],["appetite","食欲"],["nursery","保育所"],["renewable energy","再生可能エネルギー"],["reforestation","植林、森林再生"],["rating","評価、格付け"],["fever","熱、発熱"],["equator","赤道"],["Uranus","天王星"],["carbon offset","カーボンオフセット"],["seabed","海底"],["auditorium","観客席"],["depression","憂うつ、うつ病"],["vandalism","（芸術品などの）破壊、損傷"],["questionnaire","アンケート"],["reproduction","生殖、繁殖"],["collage","コラージュ"],["rectangle","長方形"],["canine","イヌ科の；犬の"],["conference","（公式の）会議"],["termite","シロアリ"],["cancer","がん"],["prescription","処方（箋）"],["manufacturer","製造業者、メーカー"],["abnormality","異常（性）"],["diagnosis","診断、診察；診断書"],["spine","脊柱、背骨"],["plaster","石こう"],["timetable","（乗り物の）時刻表"],["antioxidant","酸化防止剤"],["solstice","至；至点"],["owl","フクロウ"],["prologue","プロローグ、序文"],["rehearsal","リハーサル、下げいこ"],["obesity","肥満"],["element","元素"],["federation","連邦；連邦国家"],["lynx","オオヤマネコ"],["blister","水ぶくれ、火ぶくれ"],["finale","終楽章、フィナーレ"],["equation","等式、方程式"],["carbon","炭素"],["dumping","（ごみなどの）投げ捨て；投棄"],["sermon","（教会で行われる）説教"],["bark","〈犬・キツネなどが〉ほえる"],["ancient","古代の"],["commander","司令官"],["bulletin board","掲示板"],["spleen","脾臓(ひぞう)"],["CEO","最高経営責任者"],["blossom","（木・庭木などの）花"],["parrot","オウム"],["ambassador","大使"],["proverb","ことわざ、格言"],["bacterium","バクテリア"],["recreation","レクリエーション、娯楽"],["unemployment","失業"],["respondent","回答者"],["astronomer","天文学者"],["flood","洪水"],["galaxy","銀河、星雲"],["squid","イカ"],["monument","記念碑、記念建造物"],["square","正方形（の）"],["ash","灰、火山灰"],["primate","霊長類"],["thermostat","自動温度調節装置、サーモスタット"],["fountain","噴水"],["throne","王位、王権"],["deforestation","森林伐採"],["cactus","サボテン"],["ape","（尾のない、または尾の短い）サル；類人猿"],["gull","カモメ"],["infertility","不妊症"],["union","組合、労働組合"],["measles","はしか、麻疹"],["sonar","音波探知機"],["asteroid","小惑星"],["Mars","火星"],["landfill","（ごみの）埋め立て（地）"],["organism","生物；有機体"],["pine","マツ"],["Senate","［the Senate］上院"],["masterpiece","傑作、名作"],["infection","感染、伝染；感染症"],["jaw","あご"],["nerve","神経"],["trafficking","不正取引、密売"],["anorexia","拒食症"],["ram","（去勢していない）雄羊"],["priest","（カトリック・英国国教会などの）司祭"],["lizard","トカゲ"],["chapel","礼拝堂"],["tuna","マグロ"],["bomber","爆撃機"],["imprisonment","投獄、収監"],["coma","昏睡(こんすい)（状態）"],["cyberspace","サイバースペース"],["eyesight","視力、視覚"],["electrode","電極"],["caterpillar","いも虫、毛虫"],["innocence","無罪、潔白"],["archbishop","大司教"],["turtle","カメ；（特に）ウミガメ"],["pollutant","汚染物質、汚染源"],["crystal","水晶"],["carbon dioxide","二酸化炭素"],["acid rain","酸性雨"],["elk","ヘラジカ"],["astronaut","宇宙飛行士"],["gymnastics","（器械）体操"],["diarrhea","下痢"],["comet","彗星(すいせい)"],["limestone","石灰岩"],["infinity","無限大"],["piracy","海賊行為"],["arsenic","ヒ素"],["aristocrat","貴族"],["undergraduate","大学生、学部学生"],["pillar","柱、支柱"],["pasture","牧草地、放牧場"],["stamina","スタミナ、持久力"],["ankle","足首；くるぶし"],["sperm","精子"],["continent","大陸"],["mating","交尾、交配"],["choir","聖歌隊"],["adhesive","接着剤"],["shuttle","定期往復バス［列車、飛行機］"],["navigate","航行する；〈飛行機・船舶など〉を操縦する"],["missionary","伝道者、布教者"],["prototype","（機械などの）原型、プロトタイプ"],["neuron","ニューロン"],["auditor","監査役"],["stroke","脳卒中、発作"],["coffin","ひつぎ"],["arthritis","関節炎"],["wetland","湿地"],["sneeze","くしゃみ（をする）"],["paradox","逆説、パラドックス"],["tornado","竜巻"],["sulfur","硫黄"],["volcano","火山"],["first aid","応急手当"],["tropical rain forest","熱帯雨林"],["highway","幹線道路"],["inflation","インフレ、通貨膨張"],["fertilizer","肥料"],["aroma","芳香、アロマ"],["aerospace","航空宇宙"],["biodiesel","バイオディーゼル"],["dinosaur","恐竜"],["eel","ウナギ"],["thigh","太もも、大腿(だいたい)部"],["majority","過半数"],["devalue","〈通貨〉を切り下げる"],["rib","あばら骨"],["species","（分類上の）種"],["artistry","芸術的才能"],["evolution","進化"],["hydropower","水力発電"],["pesticide","殺虫剤"],["mummy","ミイラ"],["crocodile","ワニ"],["soil","土壌"],["parasite","寄生動物［植物］、寄生虫"],["cone","円すい"],["moth","ガ"],["Venus","金星"],["copper","銅"],["pulse","脈拍、鼓動"],["pronunciation","発音"],["diabetes","糖尿病"],["pilgrim","巡礼者、聖地参拝者"],["debut","デビュー、初舞台；デビューする"],["ground water","地下水"],["oxygen","酸素"],["nostril","鼻の穴、鼻孔"],["poacher","密漁［密猟］者"],["Saturn","土星"],["wildfire","野火；山火事"],["painkiller","鎮痛剤"],["organic","有機栽培の"],["bronze","青銅、ブロンズ"],["safari","サファリ"],["cell","細胞"],["acid","酸；酸性の"],["liver","肝臓"],["bypass","バイパス"],["sin","（宗教上の）罪、罪悪"],["refugee","難民"],["mineral","鉱物、鉱石"],["oyster","カキ"],["vulture","ハゲタカ；コンドル"],["breeze","微風"],["carving","彫刻（作品）"],["millennium","千年（紀）"],["probation","執行猶予、保護観察"],["inland","内陸の"],["resin","樹脂"],["fiber","繊維（の1本）"],["adjective","形容詞"],["stopover","（旅行の途中での）短期滞在（地）"],["parody","パロディー"],["martial arts","武道、武術"],["salmon","サケ"],["intersection","交差点"],["courthouse","裁判所"],["pension","年金"],["aircraft","航空機"],["output","生産高、産出量"],["robbery","強盗（罪）"],["Mercury","水星"],["decode","〈暗号文など〉を解読する"],["poverty","貧困"],["informant","情報提供者；内通者"],["monopoly","（商品などの）独占（権）、専売"],["manic","躁状態の"],["workshop","研修会、セミナー"],["gross domestic product","国内総生産"],["aviation","航空"],["curriculum","カリキュラム、教育課程"],["coral reef","サンゴ礁"],["mammal","ほ乳動物、ほ乳類"],["phrase","句"],["hemp","麻、大麻"],["wheat","小麦"],["pollen","花粉"],["surcharge","追加料金"],["frost","霜（が降りる）"],["addiction","（薬物などの）常用、中毒、依存症"],["bay","湾、入り江"],["graffiti","（壁などの）落書き"],["mule","ラバ"],["radius","半径"],["leprosy","ハンセン病"],["pageant","（歴史的事件を扱った）野外劇、ページェント"],["metabolism","（新陳）代謝"],["minting","（貨幣）の鋳造"],["atlas","地図帳"],["pollute","～を汚染する"],["dormitory","（大学などの）寮、寄宿舎"],["reflex","反射（運動）"],["patron","（芸術家などの）後援者、パトロン"],["auction","競売、オークション"],["diameter","直径"],["earthworm","ミミズ"],["worship","礼拝、祈り"],["hydrogen","水素"],["sparrow","スズメ"],["metaphor","隠喩(いんゆ)、メタファー"],["wrist","手首"],["rainfall","降雨（量）"],["conservationist","自然［環境］保護論者"],["rhinoceros","サイ"],["circadian rhythm","概日(がいじつ)リズム、体内時計"],["harvest","収穫"],["canal","運河"],["maple","カエデ、モミジ"],["vertebrate","脊椎動物"],["fungus","（かび・キノコ・酵母菌などの）菌類"],["quartz","石英"],["bishop","司教"],["sentence","文"],["arsenal","兵器庫"],["hypodermic","皮下（注射）の"],["greenhouse effect","温室効果"],["vein","静脈；（一般に）血管"],["gangster","ギャングの一員、暴力団員"],["license","免許証"],["camel","ラクダ"],["panorama","全景、パノラマ"],["morality","道徳（性）"],["surgery","外科、外科手術"],["doctorate","博士号"],["excavation","発掘"],["phosphorus","リン"],["remains","遺跡、遺構"],["janitor","（大きな建物の）管理人"],["microbe","微生物、細菌；病原菌"],["endocrine","内分泌の"],["graveyard","（教会の）墓地"],["Antarctica","南極大陸"],["Pluto","冥王星"],["ecosystem","生態系"],["cereal","穀物"],["slaughter","大量虐殺"],["pavilion","（博覧会などの）パビリオン"],["algae","藻、藻類"],["virus","ウイルス"],["antibiotic","抗生物質"],["brainwashing","洗脳"],["internship","インターンの身分［期間］"],["laptop","ラップトップ、ノートパソコン"],["gale","強風"],["drizzle","霧雨（が降る）"],["fiction","フィクション"],["plumbing","（建物の）配管設備"],["bilingual","2か国語を話す（人）"],["gravity","重力、引力"],["fluoride","フッ化物"],["injury","けが、負傷"],["territory","領土、領地"],["tomb","墓；墓石"],["soybean","大豆"],["pharmacy","調剤学、薬学、製薬；薬局"],["diplomat","外交官"],["moss","コケ"],["thorn","（植物の）とげ、針"],["tropic","熱帯地方；回帰線"],["gene","遺伝子"],["molecule","分子"],["anxiety","心配、不安"],["subzero","氷点下の"],["scurvy","壊血病"],["kidney","腎臓"],["childbirth","出産、分娩"],["referee","レフェリー、審判員"],["inflammation","炎症"],["ion","イオン"],["fossil fuel","化石燃料"],["warrior","戦士、軍人"],["organ","器官；臓器"],["ancestor","祖先、先祖"],["toll-free","〈通行料・通話料が〉無料の"],["monetary","通貨の、貨幣の"],["burrow","（ウサギ・モグラなどの）巣穴"],["Neptune","海王星"],["weaponry","武器類"],["amputee","切断手術を受けた患者"],["pregnancy","妊娠"],["archaeologist","考古学者"],["sewer","下水道"],["monarch","君主"],["publication","（本・新聞などの）出版"],["solar power","太陽光発電"],["dagger","短剣"],["pact","条約、協定"],["myth","（個々の）神話"],["shipwreck","難破船"],["artery","動脈"],["holly","セイヨウヒイラギ"],["orbit","軌道"],["protein","タンパク質"],["spacecraft","宇宙船"],["clog","〈管など〉を詰まらせる"],["metallurgy","冶金(やきん)（術）"],["hare","野ウサギ"],["retailer","小売業者"],["walnut","クルミ"],["reptile","は虫類"],["intestine","腸"],["immunity","免疫（性）"],["radiation","放射能"],["insomnia","不眠症"],["recital","リサイタル、独奏［独唱］会"],["impairment","障害、損傷"],["embassy","大使館"],["donkey","ロバ"],["atmosphere","大気（圏）"],["vaccine","ワクチン"],["catacomb","地下埋葬場"],["hibernation","冬眠"],["mold","かび"],["runway","滑走路"],["germ","病原菌、細菌"],["mosquito","蚊"],["peasant","小作農"],["malnutrition","栄養失調［不良］"],["indigestion","消化不良；不消化"],["scenery","（地方などの美しい）風景、景色"],["cemetery","（共同）墓地"],["tyrant","暴君、専制君主"],["ward","病棟、病室"],["smuggler","密輸業者"],["paycheck","給与"],["overfishing","（魚の）乱獲"],["nitrogen","窒素"],["herbivore","草食動物"],["logging","伐採"],["settler","入植者、移民"],["compost","たい肥"],["Jupiter","木星"],["Congress","（米国・中南米諸国の）議会、国会"],["sulfuric acid","硫酸"],["zinc","亜鉛"],["carnivore","肉食動物"],["petroleum","石油、鉱油"],["trance","催眠状態"],["skull","頭蓋骨"],["mileage","（走行［飛行］の）総マイル数；走行距離"],["meteorite","隕石(いんせき)"],["biodiversity","生物多様性"]]]];
+
+const POS={動:'動詞',名:'名詞',形:'形容詞',副:'副詞',熟:'熟語'};
+const KEY='memory-pot-school-v1';
+const LABEL={know:'覚えた',no:'覚えていない',hmm:'納得いかない'};
+const $=id=>document.getElementById(id);
+const load=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- 単語帳 ---------- */
+const UNIT_SUB={'Unit15-17':'熟語','Unit18-20':'単語・熟語'};
+const BUILTINS=UNIT_DATA.map(([name,rows])=>({id:name.toLowerCase(),name,sub:UNIT_SUB[name]||'英単語',mark:(name.match(/\d+/)||[name[0]])[0],builtin:true,lang:'en',dict:true,
+  items:rows.map(([f,b])=>({id:f+'|'+b,f,b}))}));
+const BUILTIN=BUILTINS[0];
+let custom=load(KEY+'-decks',[])||[];
+const allDecks=()=>[...BUILTINS,...custom];
+allDecks().forEach(d=>d.items.forEach((x,i)=>x.n=i+1));
+/* 内蔵の単語帳：削除したカードは非表示リストで管理（元データは消さない） */
+const hideKey=id=>KEY+'-hide-'+id;
+function applyHidden(D){const h=new Set(load(hideKey(D.id),[])||[]);D.items=D.all.filter(x=>!h.has(x.id));}
+BUILTINS.forEach(D=>{D.all=D.items;applyHidden(D);});
+const hiddenCount=D=>D.builtin?D.all.length-D.items.length:0;
+const stKey=id=>KEY+'-st-'+id;
+
+let set=Object.assign({size:20,timer:+(load(KEY+'-timer',0))||5,deck:BUILTIN.id,cat:''},load(KEY+'-set',{}));
+if(!(set.timer>0))set.timer=5;
+if('pos' in set){set.cat=set.pos?POS[set.pos]:'';delete set.pos;}
+if(!allDecks().some(d=>d.id===set.deck)){set.deck=BUILTIN.id;set.cat='';}
+const deck=()=>allDecks().find(d=>d.id===set.deck)||BUILTIN;
+let status=load(stKey(set.deck),{})||{};
+
+const todayKey=(o=0)=>{const d=new Date();d.setDate(d.getDate()+o);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
+let day=load(KEY+'-day',{d:todayKey(),n:0});if(day.d!==todayKey())day={d:todayKey(),n:0};
+const saveAll=()=>{store(stKey(set.deck),status);store(KEY+'-set',set);store(KEY+'-day',day);};
+/* 連続ログイン：前日の続きなら+1、1日以上空いたら1に戻す */
+let streak=load(KEY+'-streak',{last:'',n:0});
+/* 学びの木：XP と段階 */
+/* 体験版：毎日20枚で約1週間で大樹（製品版は 40/110/250/450/750/1150/1700/2400/3300/4500） */
+const TRIAL=true;
+const STAGES=[['種',0],['芽',10],['双葉',25],['本葉',45],['若木',70],['小さな木',100],['枝を広げた木',140],['つぼみ',185],['満開',235],['実り',290],['大樹',340]];
+let grow=load(KEY+'-grow',{xp:0,days:0,last:''});
+/* 休んだ日数ぶん木がしおれ、XPが減る */
+const parseKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);};
+const dayDiff=(a,b)=>Math.round((parseKey(b)-parseKey(a))/864e5);
+const PEN_UNIT=5;
+const penaltyFor=n=>{let p=0;for(let i=1;i<=n;i++)p+=Math.min(i,3)*PEN_UNIT;return p;};
+/* 栄養剤：大樹で1本、その後300XPごとに1本。1本で休んだ1日分を取り消す */
+const MAX_XP=340,POTION_EVERY=60;
+grow.potions=grow.potions||0;grow.earned=grow.earned||0;grow.best=Math.max(grow.best||0,grow.xp);
+const earnedFor=best=>best>=MAX_XP?1+Math.floor((best-MAX_XP)/POTION_EVERY):0;
+function checkPotions(){grow.best=Math.max(grow.best,grow.xp);const e=earnedFor(grow.best);let got=0;if(e>grow.earned){got=e-grow.earned;grow.potions+=got;grow.earned=e;}return got;}
+checkPotions();
+let missed=0;
+if(grow.last){
+  missed=Math.max(0,dayDiff(grow.last,todayKey())-1);
+  if(grow.penFor!==grow.last){grow.penFor=grow.last;grow.applied=0;grow.lost=0;grow.covered=0;}
+  grow.covered=grow.covered||0;
+  const eff=Math.max(0,missed-grow.covered);
+  if(eff>grow.applied){const loss=Math.min(grow.xp,penaltyFor(eff)-penaltyFor(grow.applied));grow.xp-=loss;grow.lost+=loss;grow.applied=eff;}
+}
+store(KEY+'-grow',grow);
+const effMissed=()=>grow.last?Math.max(0,missed-(grow.penFor===grow.last?grow.covered||0:0)):0;
+const wilt=()=>grow.last===todayKey()?0:Math.min(effMissed(),3);
+let potionMsg='';
+function usePotion(){
+  const eff=effMissed();if(grow.potions<1||eff<1||grow.last===todayKey())return;
+  grow.potions--;grow.covered=(grow.covered||0)+1;
+  const refund=Math.min(grow.lost,penaltyFor(grow.applied)-penaltyFor(Math.min(grow.applied,eff-1)));
+  grow.xp+=refund;grow.lost-=refund;grow.applied=Math.min(grow.applied,eff-1);
+  store(KEY+'-grow',grow);
+  potionMsg=nb('栄養剤を','1本使いました。','休んだ1日分を','取り消し、',`${refund}XPが`,'戻りました。');
+  renderTop();
+}
+const BOTTLE='<svg class="bottle" viewBox="0 0 16 20" aria-hidden="true"><rect x="5.5" y="1" width="5" height="3" rx="1" fill="var(--trunk)"/><path d="M6 4h4v3l3 3.5V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6.5L6 7z" fill="var(--card)" stroke="var(--leaf-2)" stroke-width="1.3"/><path d="M3.7 12h8.6V17a1.4 1.4 0 0 1-1.4 1.4H5.1A1.4 1.4 0 0 1 3.7 17z" fill="var(--leaf-3)"/></svg>';
+const HEALTH=['元気','しおれ気味','しおれている','枯れかけ'];
+const nb=(...a)=>a.map(x=>`<span class="nb">${x}</span>`).join('');
+const nextPotionIn=()=>grow.best<MAX_XP?MAX_XP-grow.best:POTION_EVERY-((grow.best-MAX_XP)%POTION_EVERY);
+const levelOf=xp=>{let L=0;STAGES.forEach(([,t],i)=>{if(xp>=t)L=i;});return L;};
+function growInfo(xp){const L=levelOf(xp),cur=STAGES[L][1],nx=STAGES[L+1];
+  return {L,name:STAGES[L][0],t:nx?(xp-cur)/(nx[1]-cur):1,need:nx?nx[1]-xp:0,nextName:nx?nx[0]:null};}
+function rng(seed){let x=seed*9301+49297;return()=>{x=(x*9301+49297)%233280;return x/233280;};}
+function plantSVG(L,t,w,pot){
+  w=w||0;
+  t=Math.max(0,Math.min(1,t||0));const r=rng(7);let g='';
+  const gy=112;
+  let body='';
+  if(L===0){
+    body+=`<ellipse cx="60" cy="${gy-3}" rx="${5+t*1.5}" ry="${3.6+t}" fill="var(--trunk)"/><path d="M58 ${gy-5} q2 -2 4 0" stroke="var(--soil)" stroke-width="1" fill="none"/>`;
+  }else if(L<=3){
+    const h=[0,14,26,40][L]+t*10,top=gy-h;
+    body+=`<path d="M60 ${gy} C 60 ${gy-h*0.4}, ${58+L} ${gy-h*0.7}, 60 ${top}" stroke="var(--lf2)" stroke-width="${2+L*0.5}" fill="none" stroke-linecap="round"/>`;
+    const leaf=(x,y,rx,ry,a,c)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${a} ${x} ${y})" fill="${c}"/>`;
+    if(L===1)body+=leaf(65,top+2,6+t*2,3,-25,'var(--lf3)');
+    if(L>=2){body+=leaf(52,top+1,8+t*2,4,20,'var(--lf3)')+leaf(68,top+1,8+t*2,4,-20,'var(--lf1)');}
+    if(L>=3){body+=leaf(50,gy-h*0.45,9,4.2,25,'var(--lf1)')+leaf(70,gy-h*0.6,9,4.2,-25,'var(--lf2)')+leaf(60,top-4,4,7,0,'var(--lf3)');}
+  }else{
+    const k=L-4,H=24+k*6+t*5,R=14+k*4.1+t*3.5,tw=3+k*1.1;
+    const cy=gy-H-R*0.15,top=gy-H;
+    body+=`<path d="M${60-tw} ${gy} Q ${60-tw*0.6} ${gy-H*0.5} ${60-tw*0.4} ${top} L ${60+tw*0.4} ${top} Q ${60+tw*0.6} ${gy-H*0.5} ${60+tw} ${gy} Z" fill="var(--trunk)"/>`;
+    if(L>=6)body+=`<path d="M60 ${gy-H*0.55} q -${R*0.45} -${R*0.25} -${R*0.6} -${R*0.6}" stroke="var(--trunk)" stroke-width="${tw*0.5}" fill="none" stroke-linecap="round"/><path d="M60 ${gy-H*0.65} q ${R*0.45} -${R*0.2} ${R*0.6} -${R*0.55}" stroke="var(--trunk)" stroke-width="${tw*0.5}" fill="none" stroke-linecap="round"/>`;
+    const blobs=L===4?[[0,0,1]]:L===5?[[-.45,.15,.68],[.45,.15,.68],[0,-.2,.8]]:[[-.55,.2,.62],[.55,.2,.62],[-.3,-.35,.66],[.3,-.35,.66],[0,0,.78]];
+    blobs.forEach(([dx,dy,s],i)=>{body+=`<circle cx="${60+dx*R}" cy="${cy+dy*R}" r="${R*s}" fill="${i%2?'var(--lf1)':'var(--lf2)'}"/>`;});
+    body+=`<circle cx="${60-R*0.25}" cy="${cy-R*0.3}" r="${R*0.32}" fill="var(--lf3)" opacity=".55"/>`;
+    const dots=(n,fn)=>{const rr=rng(L*13);for(let i=0;i<n;i++){const a=rr()*Math.PI*2,d=Math.sqrt(rr())*R*0.95;fn(60+Math.cos(a)*d,cy+Math.sin(a)*d*0.85);}};
+    if(L===7)dots(7+Math.round(t*5),(x,y)=>{body+=`<circle cx="${x}" cy="${y}" r="2.2" fill="var(--bloom)" class="bl"/>`;});
+    if(L>=8)dots(L===8?12:8,(x,y)=>{body+=`<g class="bl">${[0,72,144,216,288].map(a=>`<circle cx="${x+Math.cos(a*Math.PI/180)*2.3}" cy="${y+Math.sin(a*Math.PI/180)*2.3}" r="1.8" fill="var(--bloom)"/>`).join('')}<circle cx="${x}" cy="${y}" r="1.2" fill="var(--bloom-c)"/></g>`;});
+    if(L>=9){const rr=rng(99);for(let i=0;i<(L===9?6+Math.round(t*4):12);i++){const a=rr()*Math.PI*2,d=Math.sqrt(rr())*R*0.8;body+=`<circle cx="${60+Math.cos(a)*d}" cy="${cy+Math.sin(a)*d*0.85+2}" r="3.2" fill="var(--fruit)" class="fr"/><circle cx="${60+Math.cos(a)*d-1}" cy="${cy+Math.sin(a)*d*0.85+1}" r="1" fill="#fff" opacity=".6" class="fr"/>`;}}
+    if(L>=10)[[18,24],[100,30],[22,60],[104,70]].forEach(([x,y])=>{body+=`<path d="M${x} ${y-4} L${x+1} ${y-1} L${x+4} ${y} L${x+1} ${y+1} L${x} ${y+4} L${x-1} ${y+1} L${x-4} ${y} L${x-1} ${y-1} Z" fill="var(--bloom-c)"/>`;});
+  }
+  if(pot)g+=`<path d="M33 ${gy+8} L87 ${gy+8} L80 ${gy+44} Q79 ${gy+48} 75 ${gy+48} L45 ${gy+48} Q41 ${gy+48} 40 ${gy+44} Z" fill="var(--pot)"/><path d="M36 ${gy+16} L84 ${gy+16} L83 ${gy+20} L37 ${gy+20} Z" fill="var(--pot-2)" opacity=".5"/><rect x="28" y="${gy-1}" width="64" height="11" rx="3" fill="var(--pot-2)"/><ellipse cx="60" cy="${gy+1}" rx="28" ry="4.5" fill="var(--soil-2)"/>`;
+  else g+=`<ellipse cx="60" cy="${gy+6}" rx="52" ry="12" fill="var(--soil)"/><ellipse cx="60" cy="${gy+3}" rx="40" ry="6" fill="var(--soil-2)" opacity=".5"/>`;
+  let fall='';
+  if(w>=2&&L>=1){const rr=rng(31+w);const n=w===2?4:9;for(let i=0;i<n;i++){const x=22+rr()*76,y=gy+1+rr()*8,a=rr()*180;fall+=`<ellipse cx="${x}" cy="${y}" rx="3.2" ry="1.5" transform="rotate(${a} ${x} ${y})" fill="${i%2?'var(--dead)':'var(--wither)'}"/>`;}}
+  if(w>=3&&L>=4){const rr=rng(5);for(let i=0;i<3;i++){const x=30+rr()*60,y=40+rr()*40;fall+=`<ellipse class="drop" style="animation-delay:${i*1.3}s" cx="${x}" cy="${y}" rx="3" ry="1.4" fill="var(--dead)"/>`;}}
+  if(pot)fall=fall.replace(/<ellipse cx="[\d.]+" cy="1[12]\d[^>]*rotate[^>]*>/g,'');
+  return `<svg class="w${w}" viewBox="0 0 120 ${pot?162:128}" xmlns="http://www.w3.org/2000/svg">${pot?'':g}<g class="sway">${body}</g>${pot?g:''}${fall}</svg>`;
+}
+function renderGarden(){
+  const gi=growInfo(grow.xp);
+  const w=wilt();
+  $('plant').innerHTML=plantSVG(gi.L,gi.t,w);
+  const hb=$('gHealth');hb.textContent=HEALTH[w];hb.className='health h'+w;
+  const warn=$('gWarn');
+  if(w>0){warn.hidden=false;warn.className='g-warn';warn.innerHTML=nb(`${missed}日休んだため、`,`木が「${HEALTH[w]}」`,'状態です',`（−${grow.lost}XP）。`,'今日1枚めくると','元気に戻ります。')+(grow.covered?nb(`（栄養剤で${grow.covered}日分を`,'取り消し済み）'):'');}
+  else if(grow.last&&grow.last!==todayKey()){warn.hidden=false;warn.className='g-warn soft';warn.innerHTML=nb('今日はまだ','めくっていません。','今日中にめくらないと、','明日しおれ始めます。');}
+  else warn.hidden=true;
+  $('gLv').textContent='Lv.'+(gi.L+1);$('gName').textContent=gi.name;
+  $('gBar').style.width=(gi.t*100)+'%';
+  $('gNext').innerHTML=gi.nextName?nb(`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb('育て切りました ・ ','次の栄養剤まで',`あと ${nextPotionIn()} XP`);
+  if(!gi.nextName)$('gBar').style.width=((POTION_EVERY-nextPotionIn())/POTION_EVERY*100)+'%';
+  $('gPotion').innerHTML=`${BOTTLE}<span>栄養剤 ×${grow.potions}</span>`;$('gPotion').hidden=grow.potions<1&&grow.best<MAX_XP;
+  const eff=effMissed(),rescue=$('rescue');
+  if(w>0&&grow.potions>0){rescue.hidden=false;$('rescueText').innerHTML=(potionMsg?potionMsg+' ':'')+nb('栄養剤1本で、','休んだ1日分を','取り消せます',`（残り${grow.potions}本）`);$('rescueBtn').textContent=eff>1?'1本使う':'使って元気にする';}
+  else if(potionMsg){rescue.hidden=false;$('rescueText').innerHTML=potionMsg;$('rescueBtn').hidden=true;}
+  else rescue.hidden=true;
+  if(!(w>0&&grow.potions>0))$('rescueBtn').hidden=true;else $('rescueBtn').hidden=false;
+  potionMsg='';$('rescue').querySelector('.rescue-ico').innerHTML=BOTTLE.replace('class="bottle"','style="width:22px;height:28px"');
+  $('gMeta').textContent=`勉強した日 ${grow.days}日 ・ 累計 ${grow.xp} XP`;
+}
+function renderStages(){
+  const L=levelOf(grow.xp),box=$('stageList');box.innerHTML='';
+  STAGES.forEach(([n,t],i)=>{const d=document.createElement('div');d.className='st'+(i>L?' locked':'')+(i===L?' now':'');
+    d.innerHTML=`<div class="plant">${plantSVG(i,i===L?growInfo(grow.xp).t:.6)}</div><b>${i>L?'？？？':n}</b><small>Lv.${i+1}・${t}XP</small>`;box.appendChild(d);});
+}
+if(streak.last!==todayKey()){streak={last:todayKey(),n:streak.last===todayKey(-1)?streak.n+1:1};store(KEY+'-streak',streak);}
+
+function switchDeck(id){set.deck=id;set.cat='';status=load(stKey(id),{})||{};saveAll();if(current==='top')renderTop();else show('top');}
+
+/* ---------- navigation ---------- */
+let current='top';
+function show(name){current=name;stopTimer();
+  document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);
+  if(name==='home')renderHome();if(name==='top')renderTop();if(name==='grow')renderStages();if(name==='list')renderList();if(name==='decks')renderDecks();if(name==='cards')renderCards();
+  const sc=document.querySelector('#scr-'+name+' .scroll');if(sc)sc.scrollTop=0;}
+
+/* ---------- TOP ---------- */
+const SIZE=[[10,'10枚'],[20,'20枚'],[50,'50枚'],[0,'全部']];
+const TIMER=[[3,'3秒'],[5,'5秒'],[7,'7秒'],[10,'10秒'],[15,'15秒'],[30,'30秒']];
+function chips(el,opts,key){el.innerHTML='';opts.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;
+  b.setAttribute('aria-pressed',set[key]===v);b.onclick=()=>{set[key]=v;saveAll();renderTop();};el.appendChild(b);});}
+const pool=mode=>deck().items.filter(x=>(!set.cat||x.c===set.cat)&&(mode==='all'||(mode==='weak'?(status[x.id]==='no'||status[x.id]==='hmm'):mode==='mix'?status[x.id]!=='know':mode==='new'?!status[x.id]:status[x.id]===mode)));
+function counts(){const c={know:0,no:0,hmm:0};deck().items.forEach(x=>{const s=status[x.id];if(c[s]!==undefined)c[s]++;});return c;}
+function renderTop(){
+  const D=deck(),c=counts(),t=D.items.length||1;
+  renderSubjects();renderGarden();
+  $('todayN').textContent=day.d===todayKey()?day.n:0;
+  $('streakN').textContent=streak.n;
+  const k=((streak.n-1)%7)+1;$('streakDots').innerHTML=Array.from({length:7},(_,i)=>`<i class="${i<k?'on':''}"></i>`).join('');
+  $('pKnow').textContent=c.know;$('pTotal').textContent=D.items.length;$('pPct').textContent=Math.round(c.know/t*100)+'%';
+  $('cKnow').textContent=c.know;$('cNo').textContent=c.no;$('cHmm').textContent=c.hmm;$('cNew').textContent=D.items.length-c.know-c.no-c.hmm;
+  $('bKnow').style.width=c.know/t*100+'%';$('bHmm').style.width=c.hmm/t*100+'%';$('bNo').style.width=c.no/t*100+'%';
+  const cats=[...new Set(D.items.map(x=>x.c).filter(Boolean))];
+  if(set.cat&&!cats.includes(set.cat))set.cat='';
+  const pn=pool('new').length,pno=pool('no').length,n=set.size?Math.min(set.size,pn):pn;
+  $('ctaSub').textContent=pn?`${n}枚 ・ タイマー${set.timer}秒${set.cat?' ・ '+set.cat:''}`:'ランダムで復習できます';
+  $('ctaNew').disabled=!pn;
+  topPreview=shuffle(pool('new'));if(set.size)topPreview=topPreview.slice(0,set.size);
+  const nx=topPreview[0];
+  $('dsWord').textContent=topPreview.length;$('dsDeck').textContent=D.name;
+  $('dsCat').textContent=set.cat||'';$('dsHint').hidden=!nx;
+  $('dsPlay').lastChild.textContent=nx?'タップしてスタート':'未学習のカードはありません';
+  $('ctaTitle').textContent=nx?'未学習のカードをめくる':'未学習のカードはありません';
+  $('progDeck').textContent=D.name;
+  const dc=deckColor(D);$('scr-top').style.setProperty('--deck',dc);document.querySelector('.deck-hero').style.setProperty('--deck',dc);
+  $('setSum').textContent=`${set.size?set.size+'枚':'全部'} ・ ${set.timer}秒${set.cat?' ・ '+set.cat:''}`;
+  const h=new Date().getHours();
+  $('scene').dataset.tod=h>=5&&h<10?'morning':h<16&&h>=10?'day':h>=16&&h<19?'evening':'night';
+  $('greet').textContent=h>=5&&h<11?'おはよう':h>=11&&h<18?'こんにちは':'こんばんは';
+  $('tNo').textContent=c.no;$('tHmm').textContent=c.hmm;
+  const pm=pool('mix').length,pmh=pool('hmm').length,nm=set.size?Math.min(set.size,pm):pm;
+  const pa=pool('all').length;
+  $('ctaMix').disabled=!pa;
+  $('mixSub').textContent=pa?'範囲を選ぶ':'カードがありません';
+  $('mixDots').innerHTML=pm?`<span><i style="background:var(--desk-2);border:1px solid var(--line)"></i>新しい ${pn}</span><span><i style="background:var(--no)"></i>覚えていない ${pno}</span><span><i style="background:var(--hmm)"></i>納得いかない ${pmh}</span>`:'';
+  chips($('chSize'),SIZE,'size');chips($('chTimer'),TIMER,'timer');
+  $('catSetting').hidden=!cats.length;$('catLabel').textContent=D.catLabel||'分類';
+  if(cats.length)chips($('chCat'),[['','すべて'],...cats.map(x=>[x,x])],'cat');
+}
+
+const DECK_COLORS=['var(--c-en)','var(--c-ma)','var(--c-hi)','var(--c-p1)','var(--c-u5)','var(--c-u6)','var(--c-u7)'];
+const deckColor=D=>{const i=BUILTINS.indexOf(D);return i>=0?DECK_COLORS[i%DECK_COLORS.length]:'var(--c-my)';};
+let topPreview=[];
+const TREE_TALK={
+  0:['今日もいっしょに育とう！','1セットで木がぐんと伸びるよ','いい天気。めくりにいこう','根っこがしっかりしてきた！','覚えたカードが葉っぱになるよ'],
+  1:['ちょっとのどがかわいた…','1枚めくってくれたら元気になるよ'],
+  2:['しおれてきちゃった…','今日めくってくれたら復活するよ'],
+  3:['もう限界かも…','おねがい、1枚だけでもめくって！']};
+let bubbleT=0;
+function pokeTree(){
+  const btn=$('treeBtn'),sc=$('scene');
+  btn.classList.remove('boing');void btn.offsetWidth;btn.classList.add('boing');
+  const w=wilt(),list=TREE_TALK[w],bb=$('bubble');
+  let msg=list[Math.floor(Math.random()*list.length)];
+  if(!w&&grow.last===todayKey())msg=['今日もめくってくれてありがとう！','ぐんぐん育ってるよ','その調子！'][Math.floor(Math.random()*3)];
+  bb.textContent=msg;bb.hidden=false;clearTimeout(bubbleT);bubbleT=setTimeout(()=>bb.hidden=true,2600);
+  const r=btn.getBoundingClientRect(),sr=sc.getBoundingClientRect();
+  for(let i=0;i<7;i++){const sp=document.createElement('span');sp.className='spark'+(i%3===0?' star':'');
+    if(w>=2)sp.style.background='var(--wither)';
+    sp.style.left=(r.left-sr.left+r.width*(.3+Math.random()*.4))+'px';sp.style.top=(r.top-sr.top+r.height*(.25+Math.random()*.3))+'px';
+    sp.style.setProperty('--dx',(Math.random()*80-40)+'px');sp.style.animationDelay=(i*40)+'ms';
+    sc.appendChild(sp);setTimeout(()=>sp.remove(),1300);}
+}
+function bindDeckSwipe(){
+  const el=$('ctaNew'),card=$('ds1');let sx=0,sy=0,dx=0,down=false,swiped=false;
+  el.addEventListener('pointerdown',e=>{if(el.disabled)return;down=true;swiped=false;sx=e.clientX;sy=e.clientY;dx=0;el.classList.add('dragging');card.style.transition='none';});
+  el.addEventListener('pointermove',e=>{if(!down)return;dx=e.clientX-sx;const dy=e.clientY-sy;
+    if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dx)<10)return;
+    if(Math.abs(dx)>6)el.setPointerCapture?.(e.pointerId);
+    card.style.transform=`translateX(${Math.max(-30,dx)}px) rotate(${Math.max(-30,dx)/16}deg)`;});
+  const end=()=>{if(!down)return;down=false;el.classList.remove('dragging');
+    if(dx>70){swiped=true;card.style.transition='transform .25s ease-in';card.style.transform='translateX(140%) rotate(22deg)';
+      setTimeout(()=>{card.style.transition='none';card.style.transform='';startSession('new',topPreview);},reduce?0:220);}
+    else{card.style.transition='transform .25s';card.style.transform='';if(Math.abs(dx)>6)swiped=true;}};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+  el.addEventListener('click',e=>{if(swiped){swiped=false;e.preventDefault();return;}if(!el.disabled)startSession('new',topPreview);});
+}
+
+function renderHome(){
+  const gi=growInfo(grow.xp),w=wilt();
+  $('homePlant').innerHTML=plantSVG(gi.L,gi.t,w,true);
+  $('homeLv').textContent='Lv.'+(gi.L+1);$('homeName').textContent=gi.name;
+  const hh=$('homeHealth');hh.hidden=!w;if(w){hh.textContent=HEALTH[w];hh.className='health h'+w;}
+  $('homeStreak').textContent=streak.n;
+  const h=new Date().getHours();
+  $('scr-home').dataset.tod=h>=5&&h<10?'morning':h<16&&h>=10?'day':h>=16&&h<19?'evening':'night';
+}
+
+function renderSubjects(){
+  const box=$('subjRow');box.innerHTML='';
+  allDecks().forEach(D=>{
+    const st=D.id===set.deck?status:(load(stKey(D.id),{})||{});
+    const know=D.items.filter(x=>st[x.id]==='know').length,pct=D.items.length?Math.round(know/D.items.length*100):0;
+    const b=document.createElement('button');b.type='button';b.className='subj';b.setAttribute('aria-pressed',D.id===set.deck);
+    b.innerHTML=`<span class="subj-mark"></span><span class="subj-sub"></span><span class="subj-name"></span><span class="subj-meta">${D.items.length}枚 ・ ${pct}%</span><span class="subj-bar"><span style="width:${pct}%"></span></span>`;
+    b.querySelector('.subj-mark').textContent=D.mark||[...D.name][0];b.style.setProperty('--c',deckColor(D));
+    b.querySelector('.subj-sub').textContent=D.sub||'自作';
+    if(D.sample)b.querySelector('.subj-sub').insertAdjacentHTML('beforeend','<span class="badge">サンプル</span>');
+    b.querySelector('.subj-name').textContent=D.name;
+    b.onclick=()=>{if(D.id!==set.deck)switchDeck(D.id);};
+    box.appendChild(b);});
+
+  const cur=box.querySelector('[aria-pressed="true"]');if(cur&&box.scrollWidth>box.clientWidth)box.scrollLeft=Math.max(0,cur.offsetLeft-16);
+}
+
+/* ---------- STUDY ---------- */
+let queue=[],idx=0,history=[],sess=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startSession(mode,list){
+  let q=list?list.slice():pool(mode);shuffle(q);if(set.size&&!list)q=q.slice(0,set.size);
+  if(!q.length)return;
+  queue=q;idx=0;history=[];sess={know:0,no:0,hmm:0,timeouts:0,noList:[],xp:0,potions:0,startXp:grow.xp,startWilt:wilt()};
+  show('study');renderStudy();
+}
+function cardEl(x,behind){
+  const d=document.createElement('div');d.className='card'+(behind?' behind':'');
+  const st=status[x.id],len=[...x.f].length;
+  d.innerHTML=`<div class="card-head"><span class="no">No.${String(x.n).padStart(3,'0')}</span><span>${st?`<span class="status-tag" style="background:var(--${st}-bg);color:var(--${st})">${LABEL[st]}</span>`:''}${x.c?`<span class="pos">${esc(x.c)}</span>`:''}</span></div>
+  ${!behind?'<div class="heat" aria-hidden="true"></div><div class="timer"><span></span></div><div class="clock"></div>':''}
+  <div class="face"><div class="word${len>40?' xlong':len>14?' long':''}"></div><div class="meaning"></div><div class="hint">タップして答えを見る</div><div class="timeout-note" hidden>時間切れ</div><div class="swipe-hint" aria-hidden="true"><span class="sh-no">← 覚えていない</span><span class="sh-hmm">↑ 納得いかない</span><span class="sh-know">覚えた →</span></div></div>
+  <div class="stamp know">覚えた</div><div class="stamp sno">覚えていない</div><div class="stamp hmm">納得いかない</div>`;
+  const w=d.querySelector('.word');w.textContent=x.f;if(deck().lang)w.lang=deck().lang;
+  d.querySelector('.meaning').textContent=x.b;if(deck().formula)d.classList.add('formula');return d;
+}
+let tid=0;
+function stopTimer(){clearInterval(tid);tid=0;}
+function startTimer(el){
+  stopTimer();
+  const bar=el.querySelector('.timer span'),box=el.querySelector('.timer'),clock=el.querySelector('.clock');
+  if(!bar||!clock)return;
+  const t0=Date.now(),total=set.timer*1000;
+  const tick=()=>{
+    if(!el.isConnected||el.dataset.gone){stopTimer();return;}
+    if(el.classList.contains('revealed')){stopTimer();if(!el.dataset.timeout){clock.textContent=((Date.now()-t0)/1000).toFixed(1)+'秒で表示';clock.classList.add('done');}return;}
+    const left=Math.max(total-(Date.now()-t0),0),low=left<=Math.min(2000,total*.4);
+    bar.style.transform=`scaleX(${left/total})`;el.style.setProperty('--heat',Math.pow(1-left/total,1.6).toFixed(3));box.classList.toggle('low',low);
+    clock.textContent=(left/1000).toFixed(1)+'s';clock.classList.toggle('low',low);
+    if(left<=0){stopTimer();el.dataset.timeout=1;el.querySelector('.timeout-note').hidden=false;reveal(el);}
+  };
+  tick();tid=setInterval(tick,100);
+}
+const stage=$('stage');
+function renderStudy(){
+  stopTimer();stage.innerHTML='';
+  if(idx>=queue.length){finish();return;}
+  $('sessCount').textContent=`${idx+1} / ${queue.length}`;
+  $('sessBar').style.width=idx/queue.length*100+'%';
+  $('undo').disabled=!history.length;
+  if(queue[idx+1])stage.appendChild(cardEl(queue[idx+1],true));
+  const top=cardEl(queue[idx],false);stage.appendChild(top);attach(top);startTimer(top);showSort(false);
+}
+function showSort(on){$('btnReveal').hidden=on;$('sortGuide').hidden=!on;}
+function topCard(){return stage.querySelector('.card:not(.behind)');}
+function reveal(el){el=el||topCard();if(!el||el.dataset.gone)return;el.classList.add('revealed');showSort(true);}
+function nudge(el){el=el||topCard();if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');
+  const b=$('btnReveal');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}
+function attach(el){
+  let sx=0,sy=0,dx=0,dy=0,down=false;
+  const stamps={know:el.querySelector('.stamp.know'),no:el.querySelector('.stamp.sno'),hmm:el.querySelector('.stamp.hmm')};
+  el.addEventListener('pointerdown',e=>{if(el.dataset.gone)return;down=true;sx=e.clientX;sy=e.clientY;dx=dy=0;el.setPointerCapture(e.pointerId);el.classList.add('dragging');el.style.transition='none';});
+  el.addEventListener('pointermove',e=>{if(!down)return;dx=e.clientX-sx;dy=e.clientY-sy;
+    if(!el.classList.contains('revealed'))return;
+    el.style.transform=`translate(${dx}px,${dy}px) rotate(${dx/18}deg)`;
+    const d=dirOf(dx,dy,30);for(const k in stamps)stamps[k].style.opacity=k===d?Math.min(1,(Math.max(Math.abs(dx),-dy)-30)/70):0;});
+  const end=()=>{if(!down)return;down=false;el.classList.remove('dragging');
+    if(!el.classList.contains('revealed')){el.style.transform='';if(Math.abs(dx)<10&&Math.abs(dy)<10)reveal(el);else nudge(el);return;}
+    if(Math.abs(dx)<6&&Math.abs(dy)<6){el.style.transform='';return;}
+    const d=dirOf(dx,dy,80);
+    if(d)fly(el,d);else{el.style.transition='transform .25s';el.style.transform='';for(const k in stamps)stamps[k].style.opacity=0;}};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
+function dirOf(dx,dy,t){if(-dy>t&&-dy>Math.abs(dx))return'hmm';if(dx>t)return'know';if(dx<-t)return'no';return null;}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fly(el,d){
+  if(!el||el.dataset.gone)return;el.dataset.gone=1;stopTimer();
+  el.querySelector(d==='no'?'.stamp.sno':'.stamp.'+d).style.opacity=1;
+  const W=stage.clientWidth*2,H=stage.clientHeight*2;
+  el.style.transition='transform .26s ease-in';
+  el.style.transform=d==='know'?`translate(${W}px,30px) rotate(24deg)`:d==='no'?`translate(${-W}px,30px) rotate(-24deg)`:`translate(0,${-H}px)`;
+  setTimeout(()=>commit(d,!!el.dataset.timeout),reduce?0:230);
+}
+function commit(d,timedOut){
+  const x=queue[idx];
+  let gain=1+(d==='know'?1:0);const prevLast=grow.last;
+  if(grow.last!==todayKey()){gain+=10+Math.min(streak.n,7)*2;grow.days++;grow.last=todayKey();}
+  const prevPot={potions:grow.potions,earned:grow.earned,best:grow.best};
+  grow.xp+=gain;sess.xp+=gain;sess.potions+=checkPotions();store(KEY+'-grow',grow);
+  history.push({id:x.id,prev:status[x.id],d,timedOut,gain,prevLast,prevPot});
+  status[x.id]=d;sess[d]++;if(timedOut)sess.timeouts++;if(d==='no')sess.noList.push(x);
+  if(day.d!==todayKey())day={d:todayKey(),n:0};day.n++;saveAll();idx++;renderStudy();
+}
+function act(d){const top=topCard();if(!top)return;if(!top.classList.contains('revealed')){nudge(top);return;}fly(top,d);}
+function undo(){const h=history.pop();if(!h)return;
+  if(h.prev)status[h.id]=h.prev;else delete status[h.id];
+  grow.xp=Math.max(0,grow.xp-h.gain);sess.xp-=h.gain;sess.potions-=grow.potions-h.prevPot.potions;Object.assign(grow,h.prevPot);if(h.prevLast!==grow.last){grow.last=h.prevLast;grow.days=Math.max(0,grow.days-1);}store(KEY+'-grow',grow);
+  sess[h.d]--;if(h.timedOut)sess.timeouts--;if(h.d==='no')sess.noList.pop();day.n=Math.max(0,day.n-1);
+  saveAll();idx--;renderStudy();}
+
+/* ---------- RESULT ---------- */
+function finish(){
+  show('result');
+  $('resSub').textContent=`${queue.length}枚めくりました`+(set.timer?` ・ 時間切れ ${sess.timeouts}回`:'');
+  $('rKnow').textContent=sess.know;$('rNo').textContent=sess.no;$('rHmm').textContent=sess.hmm;
+  const gi=growInfo(grow.xp),L0=levelOf(sess.startXp);
+  $('resPlant').innerHTML=plantSVG(gi.L,gi.t,wilt());$('resXp').textContent='+'+sess.xp;
+  $('resBar').style.width=(gi.t*100)+'%';
+  $('resNext').innerHTML=gi.nextName?nb(`Lv.${gi.L+1} ${gi.name} ・ `,`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb(`Lv.${gi.L+1} ${gi.name} ・ `,'次の栄養剤まで',`あと ${nextPotionIn()} XP`);
+  const msgs=[];if(sess.startWilt>0&&wilt()===0)msgs.push(nb('木が元気を','取り戻しました！'));if(gi.L>L0)msgs.push(nb('レベルアップ！',`「${gi.name}」に`,'育ちました'));if(sess.potions>0)msgs.push(nb(`栄養剤を${sess.potions}本`,'もらいました',`（いま${grow.potions}本）`));
+  const lu=$('levelUp');lu.hidden=!msgs.length;lu.innerHTML=msgs.join('<br>');
+  const nl=sess.noList.filter(x=>status[x.id]==='no');
+  $('resAgain').hidden=!nl.length;$('resAgainSub').textContent=`このセットの${nl.length}枚だけをめくり直す`;
+  const box=$('resList');box.innerHTML='';
+  if(!nl.length){box.innerHTML='<div class="empty">このセットでは「覚えていない」がありませんでした。</div>';return;}
+  nl.forEach(x=>box.appendChild(row(x,false)));
+}
+function row(x,withActions){
+  const r=document.createElement('div');r.className='row';const D=deck();
+  r.innerHTML=`<div><div class="w"></div><div class="m"></div></div><div class="btns"><a target="_blank" rel="noopener">${D.dict?'辞書':'調べる'}</a>${withActions?'<button data-a="know" type="button">覚えた</button><button data-a="clear" type="button">解除</button>':''}</div>`;
+  r.querySelector('.w').textContent=x.f;r.querySelector('.m').textContent=(x.c?x.c+'　':'')+x.b;
+  r.querySelector('a').href=D.dict?'https://ejje.weblio.jp/content/'+encodeURIComponent(x.f):'https://www.google.com/search?q='+encodeURIComponent(x.f+' '+x.b);
+  r.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.a==='know')status[x.id]='know';else delete status[x.id];saveAll();renderList();});
+  return r;
+}
+
+/* ---------- LIST ---------- */
+/* 一覧：「覚えていない」「納得いかない」を同じ流れで見てからめくる */
+let listMode='hmm';
+const LIST_TEXT={
+  no:{title:'覚えていないカード',note:nb('左にスワイプしたカードです。','答えを見直してから','まとめてめくりましょう。'),
+      empty:'まだありません。<br>左にスワイプしたカードがここに集まります。',btn:'このカードを復習する'},
+  hmm:{title:'納得いかないカード',note:nb('答えが腑に落ちないカードです。','辞書や資料で確かめて、','納得できたら','「覚えた」か「解除」に','しましょう。'),
+      empty:'まだありません。<br>上にスワイプしたカードがここに集まります。',btn:'このカードだけでめくる'}};
+function openList(mode){listMode=mode;show('list');}
+function renderList(){
+  const T=LIST_TEXT[listMode];$('listTitle').textContent=T.title;$('listNote').innerHTML=T.note;$('listStudyLabel').textContent=T.btn;
+  $('scr-list').dataset.mode=listMode;
+  const items=deck().items.filter(x=>status[x.id]===listMode);const box=$('hmmList');box.innerHTML='';
+  $('listStudy').hidden=!items.length;$('listSub').textContent=`${items.length}枚`;
+  if(!items.length){box.innerHTML=`<div class="empty">${T.empty}</div>`;return;}
+  items.forEach(x=>box.appendChild(row(x,listMode==='hmm')));
+}
+
+/* ---------- DECKS（単語帳の切り替えと取り込み） ---------- */
+function renderDecks(){
+  const box=$('deckList');box.innerHTML='';
+  allDecks().forEach(D=>{
+    const st=D.id===set.deck?status:(load(stKey(D.id),{})||{});
+    const know=D.items.filter(x=>st[x.id]==='know').length,pct=D.items.length?Math.round(know/D.items.length*100):0;
+    const r=document.createElement('div');r.className='deck-row'+(D.id===set.deck?' current':'');
+    r.innerHTML=`<button class="deck-main" type="button"><span class="deck-name"></span><span class="deck-meta">${nb(`${D.items.length}枚`,` ・ 覚えた ${pct}%`,D.sample?' ・ サンプル':D.builtin?' ・ 収録済み':' ・ 自作')}${hiddenCount(D)?nb(` ・ ${hiddenCount(D)}枚削除中`):''}</span>
+      <span class="deck-bar"><span style="width:${pct}%"></span></span></button>
+      <div class="deck-acts"><button class="deck-org" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>整理</button></div>`;
+    r.querySelector('.deck-name').textContent=D.name;
+    r.querySelector('.deck-main').onclick=()=>switchDeck(D.id);
+    r.querySelector('.deck-org').onclick=()=>openOrg(D.id);
+    box.appendChild(r);
+  });
+}
+
+/* ---------- 取り込んだ単語帳のカード削除 ---------- */
+let cardsDeck=null,lastDel=null;
+const saveCustom=()=>store(KEY+'-decks',custom.map(d=>({...d,items:d.items.map(({n,...r})=>r)})));
+function openCards(id){cardsDeck=id;$('cardsSearch').value='';show('cards');}
+function renderCards(){
+  const D=allDecks().find(d=>d.id===cardsDeck);if(!D){show('decks');return;}
+  $('cardsTitle').textContent=D.name;
+  const q=$('cardsSearch').value.trim().toLowerCase();
+  const items=q?D.items.filter(x=>(x.f+' '+x.b+' '+(x.c||'')).toLowerCase().includes(q)):D.items;
+  $('cardsCount').textContent=q?`${D.items.length}枚中 ${items.length}枚が一致`:`全${D.items.length}枚`;
+  const box=$('cardsList');box.innerHTML='';
+  if(!items.length){box.innerHTML=`<div class="empty">${D.items.length?'一致するカードがありません。':'カードがありません。'}</div>`;return;}
+  items.slice(0,300).forEach(x=>{const r=document.createElement('div');r.className='row';
+    r.innerHTML='<div><div class="w"></div><div class="m"></div></div><div class="btns"><button class="danger-btn" type="button">削除</button></div>';
+    r.querySelector('.w').textContent=x.f;r.querySelector('.m').textContent=(x.c?x.c+'　':'')+x.b;
+    r.querySelector('button').onclick=()=>deleteCard(D,x);box.appendChild(r);});
+  if(items.length>300)box.insertAdjacentHTML('beforeend',`<div class="empty">ほか ${items.length-300}枚。検索で絞り込んでください。</div>`);
+}
+function deleteCard(D,x){
+  const i=D.items.indexOf(x);if(i<0)return;
+  if(D.builtin){const h=load(hideKey(D.id),[])||[];h.push(x.id);store(hideKey(D.id),h);applyHidden(D);
+    lastDel={deck:D.id,item:x,builtin:true};renderCards();toast(`「${x.f}」を削除しました`,'元に戻す',undoDelete);return;}
+  const stK=stKey(D.id),st=D.id===set.deck?status:(load(stK,{})||{});
+  lastDel={deck:D.id,item:x,index:i,st:st[x.id]};
+  D.items.splice(i,1);delete st[x.id];
+  if(D.id===set.deck)saveAll();else store(stK,st);
+  saveCustom();renderCards();
+  toast(`「${x.f}」を削除しました`,'元に戻す',undoDelete);
+}
+function undoDelete(){
+  if(!lastDel)return;const D=allDecks().find(d=>d.id===lastDel.deck);if(!D)return;
+  if(lastDel.builtin){store(hideKey(D.id),(load(hideKey(D.id),[])||[]).filter(id=>id!==lastDel.item.id));applyHidden(D);lastDel=null;if(current==='cards')renderCards();toast('元に戻しました');return;}
+  D.items.splice(lastDel.index,0,lastDel.item);
+  if(lastDel.st){const stK=stKey(D.id),st=D.id===set.deck?status:(load(stK,{})||{});st[lastDel.item.id]=lastDel.st;if(D.id===set.deck)saveAll();else store(stK,st);}
+  saveCustom();lastDel=null;if(current==='cards')renderCards();toast('元に戻しました');
+}
+/* 単語帳の整理メニュー */
+let orgDeck=null;
+function openOrg(id){orgDeck=id;const D=allDecks().find(d=>d.id===id);if(!D)return;
+  $('orgTitle').textContent=D.name;$('orgSub').textContent=`${D.items.length}枚${hiddenCount(D)?`（${hiddenCount(D)}枚削除中）`:''}`;
+  const box=$('orgOpts');box.innerHTML='';
+  const add=(label,sub,col,fn,danger)=>{const b=document.createElement('button');b.type='button';b.className='mix-opt'+(danger?' danger':'');b.style.setProperty('--mc',col);
+    b.innerHTML='<span class="mix-ico" aria-hidden="true"></span><span class="rs-text"><b></b><small></small></span>';
+    b.querySelector('.mix-ico').textContent=danger?'×':'≡';b.querySelector('b').textContent=label;b.querySelector('small').textContent=sub;b.onclick=fn;box.appendChild(b);return b;};
+  add('カードを整理する','1枚ずつ確認して、いらないカードを削除','var(--ink)',()=>{closeOrg();openCards(id);});
+  if(D.builtin&&hiddenCount(D))add('削除したカードを戻す',`削除した${hiddenCount(D)}枚をすべて元に戻す`,'var(--know)',()=>{store(hideKey(id),[]);applyHidden(D);closeOrg();renderDecks();toast(`${D.name}を元の${D.items.length}枚に戻しました`);});
+  if(!D.builtin){const b=add('単語帳を削除','取り込んだ単語帳と記録をすべて消す','var(--no)',()=>{
+      if(!b.dataset.armed){b.dataset.armed=1;b.querySelector('b').textContent='もう一度押すと削除します';return;}
+      custom=custom.filter(d=>d.id!==id);saveCustom();try{localStorage.removeItem(stKey(id));}catch(e){}
+      if(set.deck===id){set.deck=BUILTIN.id;set.cat='';status=load(stKey(BUILTIN.id),{})||{};saveAll();}
+      closeOrg();renderDecks();toast(`「${D.name}」を削除しました`);},true);}
+  $('orgSheet').hidden=false;}
+function closeOrg(){$('orgSheet').hidden=true;}
+$('orgCancel').onclick=closeOrg;
+$('orgSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closeOrg();});
+$('cardsBack').onclick=()=>show('decks');
+$('cardsSearch').oninput=renderCards;
+
+let parsedRows=null;
+function splitDelimited(text,delim){
+  const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){cell+='"';i++;}else q=false;}else cell+=ch;continue;}
+    if(ch==='"'&&cell==='')q=true;
+    else if(ch===delim){row.push(cell);cell='';}
+    else if(ch==='\n'){row.push(cell);rows.push(row);row=[];cell='';}
+    else if(ch!=='\r')cell+=ch;}
+  row.push(cell);rows.push(row);return rows;
+}
+function textToRows(t){
+  t=t.replace(/^﻿/,'');
+  const delim=t.includes('\t')?'\t':t.includes(',')?',':t.includes('、')?null:null;
+  if(!delim)return null;
+  return splitDelimited(t,delim);
+}
+const HEAD_F=/^(問題|表|おもて|質問|単語|用語|英単語|語句|question|word|term|front|q)$/i;
+const HEAD_B=/^(答え|答|裏|うら|解答|意味|訳|answer|meaning|back|definition|a)$/i;
+function setRows(rows,name){
+  const box=$('impPreview');
+  if(!rows){parsedRows=null;box.innerHTML='<p class="imp-err">区切りが見つかりません。表と裏をタブかカンマで区切ってください。</p>';updateImpBtn();return;}
+  rows=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(Boolean));
+  const head=rows[0]&&(HEAD_F.test(rows[0][0]||'')||HEAD_B.test(rows[0][1]||''));
+  $('impHead').checked=!!head;
+  parsedRows=rows;if(name&&!$('impName').value)$('impName').value=name;
+  drawPreview();
+}
+function cleanRows(){
+  if(!parsedRows)return {ok:[],skip:0};
+  const body=$('impHead').checked?parsedRows.slice(1):parsedRows;
+  const ok=[];let skip=0;
+  body.forEach(r=>{const f=r[0]||'',b=r[1]||'';if(f&&b)ok.push({f,b,c:r[2]||''});else skip++;});
+  return {ok,skip};
+}
+function drawPreview(){
+  const box=$('impPreview');const {ok,skip}=cleanRows();
+  if(!parsedRows){box.innerHTML='';updateImpBtn();return;}
+  if(!ok.length){box.innerHTML='<p class="imp-err">カードにできる行がありません。A列に表（問題）、B列に裏（答え）を入れてください。</p>';updateImpBtn();return;}
+  const cats=new Set(ok.map(x=>x.c).filter(Boolean)).size;
+  box.innerHTML=`<p class="imp-ok"><b>${ok.length}</b>枚のカードになります${skip?`（表か裏が空の${skip}行は除外）`:''}${cats?` ・ 分類 ${cats}種類`:''}</p>
+    <div class="imp-table"><div class="ih">表</div><div class="ih">裏</div><div class="ih">分類</div>
+    ${ok.slice(0,5).map(x=>`<div>${esc(x.f)}</div><div>${esc(x.b)}</div><div>${esc(x.c||'—')}</div>`).join('')}</div>
+    ${ok.length>5?`<p class="imp-more">ほか ${ok.length-5}枚</p>`:''}`;
+  updateImpBtn();
+}
+function updateImpBtn(){$('impGo').disabled=!cleanRows().ok.length||!$('impName').value.trim();}
+
+async function readFile(file){
+  const name=file.name.replace(/\.[^.]+$/,'');
+  try{
+    if(/\.(xlsx|xls)$/i.test(file.name)){
+      if(!window.XLSX){$('impPreview').innerHTML='<p class="imp-err">Excelの読み込み部品を準備できませんでした。Excelで「CSV」として保存するか、セルをコピーして下の欄に貼り付けてください。</p>';return;}
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      setRows(XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''}),name);return;
+    }
+    const buf=await file.arrayBuffer();let text;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf);}catch(e){text=new TextDecoder('shift_jis').decode(buf);}
+    setRows(textToRows(text),name);
+  }catch(e){$('impPreview').innerHTML='<p class="imp-err">ファイルを読み込めませんでした。形式（.xlsx / .csv / .txt）を確認してください。</p>';}
+}
+$('impFile').onchange=e=>{const f=e.target.files[0];if(f){$('impText').value='';readFile(f);}};
+$('impText').oninput=()=>{const t=$('impText').value;if(!t.trim()){parsedRows=null;drawPreview();return;}setRows(textToRows(t));};
+$('impHead').onchange=drawPreview;
+$('impName').oninput=updateImpBtn;
+$('impSample').onclick=()=>{
+  $('impText').value='表\t裏\t分類\nH\t水素\t第1周期\nHe\tヘリウム\t第1周期\nLi\tリチウム\t第2周期\nC\t炭素\t第2周期\nN\t窒素\t第2周期\nO\t酸素\t第2周期\nNa\tナトリウム\t第3周期\nMg\tマグネシウム\t第3周期\nAl\tアルミニウム\t第3周期\nCl\t塩素\t第3周期\nK\tカリウム\t第4周期\nCa\tカルシウム\t第4周期\nFe\t鉄\t第4周期';
+  $('impName').value='元素記号（サンプル）';setRows(textToRows($('impText').value));};
+$('impGo').onclick=()=>{
+  const {ok}=cleanRows();const name=$('impName').value.trim();if(!ok.length||!name)return;
+  const D={id:'d'+Date.now().toString(36),name,catLabel:'分類',items:ok.map((x,i)=>({id:String(i+1),f:x.f,b:x.b,c:x.c,n:i+1}))};
+  const next=[...custom,D];
+  if(!store(KEY+'-decks',next.map(d=>({...d,items:d.items.map(({n,...r})=>r)})))){
+    $('impPreview').insertAdjacentHTML('afterbegin','<p class="imp-err">保存できませんでした。ブラウザの保存容量が足りないか、保存が許可されていません。</p>');return;}
+  custom=next;
+  $('impText').value='';$('impName').value='';$('impFile').value='';parsedRows=null;drawPreview();
+  switchDeck(D.id);
+};
+
+/* ---------- wiring ---------- */
+$('addDeck').onclick=()=>show('decks');
+$('decksBack').onclick=()=>show('top');
+bindDeckSwipe();$('treeBtn').onclick=pokeTree;
+$('garden').onclick=()=>show('grow');$('rescueBtn').onclick=usePotion;$('growBack').onclick=()=>show('top');
+/* ランダムの範囲を選ぶ */
+const MIX_OPTS=[['all','すべてのカード','覚えたカードも含めて全部から','var(--ink)'],
+  ['weak','覚えていない ＋ 納得いかない','あやしいカードだけ','var(--no)']];
+function openMix(){
+  const box=$('mixOpts');box.innerHTML='';
+  MIX_OPTS.forEach(([k,label,sub,col])=>{const n=pool(k).length,m=set.size?Math.min(set.size,n):n;
+    const b=document.createElement('button');b.type='button';b.className='mix-opt';b.disabled=!n;b.style.setProperty('--mc',col);
+    b.innerHTML=`<span class="mix-ico" aria-hidden="true">⤨</span><span class="rs-text"><b></b><small></small></span><span class="mix-n">${n?m+'枚':'0枚'}</span>`;
+    b.querySelector('b').textContent=label;b.querySelector('small').innerHTML=n?nb(sub,`（対象 ${n}枚）`):'対象のカードがありません';
+    b.onclick=()=>{closeMix();startSession(k);};box.appendChild(b);});
+  $('mixSheet').hidden=false;}
+function closeMix(){$('mixSheet').hidden=true;}
+$('ctaMix').onclick=openMix;
+$('mixCancel').onclick=closeMix;
+$('mixSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closeMix();});
+$('tileNo').onclick=()=>openList('no');
+$('tileHmm').onclick=()=>openList('hmm');
+$('quit').onclick=()=>show('top');
+$('undo').onclick=undo;
+$('btnReveal').onclick=()=>reveal();
+$('btnNo').onclick=()=>act('no');$('btnHmm').onclick=()=>act('hmm');$('btnKnow').onclick=()=>act('know');
+$('resAgain').onclick=()=>startSession('no',sess.noList.filter(x=>status[x.id]==='no'));
+$('resTop').onclick=()=>show('top');
+$('listBack').onclick=()=>show('top');
+$('listStudy').onclick=()=>startSession(listMode,deck().items.filter(x=>status[x.id]===listMode));
+/* 記録のリセット：範囲を選んで、件数を確かめてから実行 */
+const RS_OPTS=[['no','「覚えていない」のカード','もう一度めくれるように未学習へ'],['hmm','「納得いかない」のカード','一覧から外して未学習へ'],['know','「覚えた」のカード','覚え直したいときに'],['all','すべてのカード','この単語帳を最初からやり直す']];
+let rsPick='no';
+function rsCount(k){return deck().items.filter(x=>k==='all'?!!status[x.id]:status[x.id]===k).length;}
+function renderReset(){
+  $('rsDeck').textContent=`「${deck().name}」の仕分けを未学習に戻します。`;
+  const box=$('rsOpts');box.innerHTML='';
+  RS_OPTS.forEach(([k,label,sub])=>{const n=rsCount(k);const b=document.createElement('button');b.type='button';b.className='rs-opt'+(k==='all'?' all':'');
+    b.setAttribute('role','radio');b.setAttribute('aria-checked',rsPick===k);b.disabled=!n;
+    b.innerHTML=`<span class="rs-dot" aria-hidden="true"></span><span class="rs-text"><b></b><small></small></span><span class="rs-n">${n}枚</span>`;
+    b.querySelector('b').textContent=label;b.querySelector('small').textContent=sub;
+    b.onclick=()=>{rsPick=k;renderReset();};box.appendChild(b);});
+  const n=rsCount(rsPick),go=$('rsGo');go.disabled=!n;go.classList.toggle('all',rsPick==='all');
+  go.textContent=n?`${n}枚を未学習に戻す`:'戻すカードがありません';
+}
+function openReset(){rsPick=['no','hmm','know','all'].find(k=>rsCount(k))||'no';renderReset();$('resetSheet').hidden=false;}
+function closeReset(){$('resetSheet').hidden=true;}
+let toastT=0;
+function toast(msg,label,fn){const t=$('toast');t.textContent=msg;
+  if(label){const b=document.createElement('button');b.type='button';b.className='toast-act';b.textContent=label;b.onclick=()=>{t.hidden=true;fn();};t.appendChild(b);}
+  t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,label?5000:2600);}
+$('resetAll').onclick=openReset;
+$('rsCancel').onclick=closeReset;
+$('resetSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closeReset();});
+$('rsGo').onclick=()=>{const n=rsCount(rsPick);deck().items.forEach(x=>{if(rsPick==='all'?status[x.id]:status[x.id]===rsPick)delete status[x.id];});
+  saveAll();closeReset();renderTop();toast(`${n}枚を未学習に戻しました`);};
+document.addEventListener('keydown',e=>{if(current!=='study')return;
+  if(e.key==='ArrowRight')act('know');else if(e.key==='ArrowLeft')act('no');else if(e.key==='ArrowUp')act('hmm');
+  else if(e.key===' '||e.key==='Enter'){e.preventDefault();reveal();}
+  else if(e.key==='z'||e.key==='Backspace')undo();
+  else if(e.key==='Escape')show('top');});
+const clock=()=>{const d=new Date();$('sbTime').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};
+clock();setInterval(clock,30000);
+
+$('homeStart').onclick=()=>show('top');
+$('homePlantBtn').onclick=()=>{const b=$('homePlantBtn');b.classList.remove('boing');void b.offsetWidth;b.classList.add('boing');};
+show('home');
+</script>
+
+<script>
+/* ---------- PWA ---------- */
+(function(){
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  if('serviceWorker' in navigator&&location.protocol!=='file:'){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  }
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+  const tip=document.getElementById('installTip');
+  let closed=false;try{closed=localStorage.getItem('memory-pot-school-install-closed')==='1';}catch(e){}
+  if(standalone||closed)return;
+  const ua=navigator.userAgent,isIOS=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;tip.hidden=false;document.getElementById('instBtn').hidden=false;document.getElementById('instOther').hidden=true;});
+  if(isIOS){tip.hidden=false;document.getElementById('instIOS').hidden=false;}
+  else if(/Android|Mobile/.test(ua)){tip.hidden=false;document.getElementById('instOther').hidden=false;}
+  document.getElementById('instBtn').onclick=async()=>{if(!deferred)return;deferred.prompt();try{await deferred.userChoice;}catch(e){}deferred=null;tip.hidden=true;};
+  document.getElementById('instClose').onclick=()=>{tip.hidden=true;try{localStorage.setItem('memory-pot-school-install-closed','1');}catch(e){}};
+  window.addEventListener('appinstalled',()=>{tip.hidden=true;});
+})();
+</script>
+</body>
+</html>
