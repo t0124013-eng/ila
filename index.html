@@ -579,6 +579,22 @@ body{word-break:auto-phrase;line-break:strict}
 .pop-dirs li i{font-style:normal;font-family:var(--f-mono);font-weight:700;width:1.2em;text-align:center}
 .pop-dirs .k i{color:var(--know)}.pop-dirs .n i{color:var(--no)}.pop-dirs .h i{color:var(--hmm)}
 @keyframes popIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
+/* ---------- 先生に報告 ---------- */
+.report{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:16px;background:var(--card);box-shadow:var(--shadow);padding:10px 16px 10px 8px;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
+.report-fig{flex:none;width:60px;height:72px;display:flex;align-items:flex-end;justify-content:center;border-radius:12px;background:#E2EBF5;overflow:hidden}
+.report-fig img{height:70px;width:auto}
+.report-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.report-txt strong{font-size:.9rem;font-weight:900}
+.report-txt small{font-size:.72rem;color:var(--ink-soft)}
+.report .arrow{font-size:1.1rem;color:var(--ink-soft)}
+.report.done .report-txt small{color:var(--know);font-weight:700}
+.rp-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 2px}
+.rp-sum div{background:var(--desk);border-radius:10px;padding:8px 4px;font-size:.68rem;color:var(--ink-soft);text-align:center;line-height:1.3}
+.rp-sum b{display:block;font-family:var(--f-mono);font-size:1.1rem;color:var(--ink)}
+.rp-who{font-size:.78rem;color:var(--ink-soft);margin-top:8px}
+.rp-who button{border:0;background:none;color:var(--c-en);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;padding:0 0 0 6px}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf-err{margin:0;font-size:.78rem;color:var(--no)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 <style>
@@ -681,6 +697,7 @@ img{max-width:100%}
             <button class="q no" id="tileNo" type="button"><span class="q-num" id="tNo">0</span><strong>覚えていない</strong><small>一覧を見る</small></button>
             <button class="q hmm" id="tileHmm" type="button"><span class="q-num" id="tHmm">0</span><strong>納得いかない</strong><small>見直す</small></button>
           </div>
+          <button class="report" id="reportTop" type="button" hidden><span class="report-fig" aria-hidden="true"><img src="img/tablet.png" alt=""></span><span class="report-txt"><strong>今日の頑張りを先生に報告</strong><small id="reportTopSub"></small></span><span class="arrow" aria-hidden="true">→</span></button>
 
           <div class="panel">
             <div class="prog-label"><span id="progDeck"></span>の覚えたカード</div>
@@ -776,6 +793,7 @@ img{max-width:100%}
           <button class="cta" id="resAgain" type="button"><span><strong><span class="nb">覚えていない単語を</span><span class="nb">もう一度</span></strong><small id="resAgainSub"></small></span><span class="arrow">→</span></button>
           <h2 class="sec-title">このセットで「覚えていない」にした単語</h2>
           <div class="panel list" id="resList"></div>
+          <button class="report" id="reportRes" type="button" hidden><span class="report-fig" aria-hidden="true"><img src="img/tablet.png" alt=""></span><span class="report-txt"><strong>今日の頑張りを先生に報告</strong><small id="reportResSub"></small></span><span class="arrow" aria-hidden="true">→</span></button>
           <button class="btn2" id="resTop" type="button">TOPへ戻る</button>
         </div>
       </section>
@@ -896,6 +914,20 @@ img{max-width:100%}
         <p class="note" id="orgSub"></p>
         <div class="rs-opts" id="orgOpts"></div>
         <button class="btn2" id="orgCancel" type="button">やめる</button>
+      </div>
+    </div>
+    <div class="sheet-back" id="profSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pfTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="pfTitle">あなたの名前を登録</h2>
+        <p class="note">先生への報告に使います。最初に1回だけ入力すれば、次からは入力しなくてOKです。</p>
+        <div class="pf-row">
+          <label class="field"><span>クラス</span><input type="text" id="pfClass" placeholder="例：1A" autocomplete="off" maxlength="10"></label>
+          <label class="field"><span>出席番号</span><input type="text" id="pfNo" inputmode="numeric" placeholder="例：12" autocomplete="off" maxlength="3"></label>
+        </div>
+        <label class="field"><span>名前</span><input type="text" id="pfName" placeholder="例：桜丘 花子" autocomplete="off" maxlength="30"></label>
+        <p class="pf-err" id="pfErr" hidden></p>
+        <div class="rs-actions"><button class="btn2" id="pfCancel" type="button">やめる</button><button class="rs-go" id="pfSave" type="button" style="background:var(--ink)">登録する</button></div>
       </div>
     </div>
     <div class="pop-back" id="pop" hidden>
@@ -1092,6 +1124,7 @@ function chips(el,opts,key){el.innerHTML='';opts.forEach(([v,l])=>{const b=docum
 const pool=mode=>deck().items.filter(x=>(!set.cat||x.c===set.cat)&&(mode==='all'||(mode==='weak'?(status[x.id]==='no'||status[x.id]==='hmm'):mode==='mix'?status[x.id]!=='know':mode==='new'?!status[x.id]:status[x.id]===mode)));
 function counts(){const c={know:0,no:0,hmm:0};deck().items.forEach(x=>{const s=status[x.id];if(c[s]!==undefined)c[s]++;});return c;}
 function renderTop(){
+  if(typeof renderReport==='function')renderReport();
   const D=deck(),c=counts(),t=D.items.length||1;
   renderSubjects();renderGarden();
   $('todayN').textContent=day.d===todayKey()?day.n:0;
@@ -1307,18 +1340,18 @@ function commit(d,timedOut){
   grow.xp+=gain;sess.xp+=gain;sess.potions+=checkPotions();store(KEY+'-grow',grow);
   history.push({id:x.id,prev:status[x.id],d,timedOut,gain,prevLast,prevPot});
   status[x.id]=d;sess[d]++;if(timedOut)sess.timeouts++;if(d==='no')sess.noList.push(x);
-  if(day.d!==todayKey())day={d:todayKey(),n:0};day.n++;saveAll();idx++;renderStudy();
+  if(day.d!==todayKey())day={d:todayKey(),n:0};day.n++;day[d]=(day[d]||0)+1;saveAll();idx++;renderStudy();
 }
 function act(d){const top=topCard();if(!top)return;if(!top.classList.contains('revealed')){nudge(top);return;}fly(top,d);}
 function undo(){const h=history.pop();if(!h)return;
   if(h.prev)status[h.id]=h.prev;else delete status[h.id];
   grow.xp=Math.max(0,grow.xp-h.gain);sess.xp-=h.gain;sess.potions-=grow.potions-h.prevPot.potions;Object.assign(grow,h.prevPot);if(h.prevLast!==grow.last){grow.last=h.prevLast;grow.days=Math.max(0,grow.days-1);}store(KEY+'-grow',grow);
-  sess[h.d]--;if(h.timedOut)sess.timeouts--;if(h.d==='no')sess.noList.pop();day.n=Math.max(0,day.n-1);
+  sess[h.d]--;if(h.timedOut)sess.timeouts--;if(h.d==='no')sess.noList.pop();day.n=Math.max(0,day.n-1);if(day.d===todayKey())day[h.d]=Math.max(0,(day[h.d]||0)-1);
   saveAll();idx--;renderStudy();}
 
 /* ---------- RESULT ---------- */
 function finish(){
-  show('result');
+  show('result');renderReport();
   $('resSub').textContent=`${queue.length}枚めくりました`+(set.timer?` ・ 時間切れ ${sess.timeouts}回`:'');
   $('rKnow').textContent=sess.know;$('rNo').textContent=sess.no;$('rHmm').textContent=sess.hmm;
   const gi=growInfo(grow.xp),L0=levelOf(sess.startXp);
@@ -1592,6 +1625,64 @@ document.addEventListener('keydown',e=>{if(current!=='study')return;
   else if(e.key==='Escape')show('top');});
 const clock=()=>{const d=new Date();$('sbTime').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};
 clock();setInterval(clock,30000);
+
+/* ---------- 先生に報告（Googleスプレッドシート） ----------
+   REPORT_URL に、Apps Script の「ウェブアプリのURL」（https://script.google.com/macros/s/…/exec）を貼る。
+   空のあいだは報告ボタンを表示しない。 */
+const REPORT_URL='https://script.google.com/macros/s/AKfycbxZjfSCVEOVzYnKjWaGjdFK3eiBVzQHdyhuGr7ol82UrwLLw4zYalsakYmPJYwRFX3Y/exec';
+const PROF_KEY=KEY+'-profile',REP_KEY=KEY+'-reported',PEND_KEY=KEY+'-report-pending';
+let prof=load(PROF_KEY,null);
+const devId=(()=>{let v=load(KEY+'-device','');if(!v){v=Math.random().toString(36).slice(2,10);store(KEY+'-device',v);}return v;})();
+const isoDay=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+const hhmm=t=>{const d=new Date(t);return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};
+function todayStats(){const t=day.d===todayKey();return {n:t?day.n:0,know:t?day.know||0:0,no:t?day.no||0:0,hmm:t?day.hmm||0:0};}
+function reportedToday(){const r=load(REP_KEY,null);return r&&r.d===isoDay()?r:null;}
+function renderReport(){
+  const on=!!REPORT_URL,r=reportedToday(),pend=load(PEND_KEY,null);
+  [['reportTop','reportTopSub'],['reportRes','reportResSub']].forEach(([b,sub])=>{const el=$(b);if(!el)return;el.hidden=!on;if(!on)return;
+    el.classList.toggle('done',!!r&&!pend);
+    $(sub).textContent=pend?'通信できたら自動で送ります':r?`報告済み（${hhmm(r.t)}）・押すと最新に更新`:'1日1回、今日の記録を送れます';});
+}
+function payload(){const st=todayStats(),gi=growInfo(grow.xp);
+  return {date:isoDay(),cls:prof.cls,no:prof.no,name:prof.name,cards:st.n,know:st.know,notyet:st.no,hmm:st.hmm,
+    xp:grow.xp,level:gi.L+1,stage:gi.name,streak:streak.n,device:devId,sentAt:new Date().toISOString()};}
+async function sendReport(data){
+  await fetch(REPORT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)});
+}
+async function doReport(){
+  const data=payload();
+  try{await sendReport(data);store(REP_KEY,{d:data.date,t:Date.now()});try{localStorage.removeItem(PEND_KEY);}catch(e){}
+    renderReport();pop({img:'cheer',title:'報告しました！',msg:`今日は<b>${data.cards}枚</b>。先生に送ったよ。<br>明日もいっしょにがんばろう！`});}
+  catch(e){store(PEND_KEY,data);renderReport();
+    pop({img:'think',title:'いまは送れませんでした',msg:'通信できる場所でアプリを開くと、<b>自動で送り直します</b>。'});}
+}
+async function flushPending(){const p=load(PEND_KEY,null);if(!p||!REPORT_URL||!navigator.onLine)return;
+  if(p.date!==isoDay()){try{localStorage.removeItem(PEND_KEY);}catch(e){}renderReport();return;}
+  const data=payload();try{await sendReport(data);store(REP_KEY,{d:data.date,t:Date.now()});localStorage.removeItem(PEND_KEY);toast('先生への報告を送りました');}catch(e){}renderReport();}
+function openReport(){
+  if(!prof){openProfile(openReport);return;}
+  const st=todayStats(),r=reportedToday(),gi=growInfo(grow.xp);
+  if(!st.n){pop({img:'think',title:'今日はまだ0枚',msg:'1枚でもめくってから報告しよう。<br>先生は、少しずつでも毎日つづけていることを見ているよ。',acts:[['あとで',null,1],['1セットやる',()=>show('top')]]});return;}
+  pop({img:'tablet',title:r?'今日の記録を更新する':'今日の頑張りを報告',
+    msg:`<div class="rp-sum"><div>めくった<b>${st.n}</b></div><div>覚えた<b>${st.know}</b></div><div>連続<b>${streak.n}日</b></div></div>`+
+      `学びの木 Lv.${gi.L+1}「${esc(gi.name)}」・累計 ${grow.xp} XP`+(r?`<br><small>${hhmm(r.t)}に報告済み。送ると最新の内容に置きかわります。</small>`:'')+
+      `<div class="rp-who">${esc(prof.cls)} ${esc(prof.no)}番 ${esc(prof.name)}<button type="button" id="rpEdit">変更</button></div>`,
+    acts:[['やめる',null,1],[r?'更新する':'報告する',doReport]]});
+  const e=$('rpEdit');if(e)e.onclick=()=>{nextPop();openProfile(openReport);};
+}
+let profNext=null;
+function openProfile(next){profNext=next||null;$('pfClass').value=prof?prof.cls:'';$('pfNo').value=prof?prof.no:'';$('pfName').value=prof?prof.name:'';$('pfErr').hidden=true;$('profSheet').hidden=false;}
+$('pfCancel').onclick=()=>{$('profSheet').hidden=true;};
+$('profSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)$('profSheet').hidden=true;});
+$('pfSave').onclick=()=>{
+  const z=v=>v.replace(/[Ａ-Ｚａ-ｚ０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).trim();
+  const cls=z($('pfClass').value).toUpperCase(),no=z($('pfNo').value).replace(/^0+(?=\d)/,''),name=$('pfName').value.trim().replace(/\s+/g,' ');
+  const err=!cls?'クラスを入力してください':!/^\d{1,3}$/.test(no)?'出席番号は数字で入力してください':!name?'名前を入力してください':'';
+  if(err){$('pfErr').textContent=err;$('pfErr').hidden=false;return;}
+  prof={cls,no,name};store(PROF_KEY,prof);$('profSheet').hidden=true;const n=profNext;profNext=null;if(n)n();};
+$('reportTop').onclick=openReport;$('reportRes').onclick=openReport;
+window.addEventListener('online',flushPending);
+renderReport();setTimeout(flushPending,1500);
 
 $('homeStart').onclick=()=>show('top');
 $('homePlantBtn').onclick=()=>{const b=$('homePlantBtn');b.classList.remove('boing');void b.offsetWidth;b.classList.add('boing');};
