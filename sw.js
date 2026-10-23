@@ -1,6 +1,6 @@
 /* メモリーポット スクール版 service worker
    アプリを更新したら VERSION の数字を1つ上げてください（例：v1 → v2）。 */
-const VERSION = 'v12';
+const VERSION = 'v14';
 const CORE = 'memory-pot-school-core-' + VERSION;
 const FONTS = 'memory-pot-school-fonts';
 const CORE_FILES = [

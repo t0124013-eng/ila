@@ -371,7 +371,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset
 @keyframes spark{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-70px) rotate(220deg)}}
 .bubble{position:absolute;z-index:4;left:50%;top:78px;transform:translateX(-50%);max-width:78%;background:var(--card);color:var(--ink);font-size:.8rem;font-weight:700;line-height:1.5;padding:8px 12px;border-radius:14px;box-shadow:var(--shadow);text-align:center;animation:pop .25s ease-out}
 .bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:var(--card);transform:translateX(-50%) rotate(45deg)}
-.scene-foot{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.55);border-radius:14px;padding:9px 12px;backdrop-filter:blur(4px)}
+.scene-foot{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;align-items:stretch;background:rgba(255,255,255,.55);border-radius:14px;padding:9px 12px;backdrop-filter:blur(4px)}
 .scene[data-tod="night"] .scene-foot{background:rgba(255,255,255,.1)}
 .scene .g-next{color:inherit;opacity:.85}
 .scene .g-bar{background:rgba(29,47,69,.12)}
@@ -648,6 +648,54 @@ body{word-break:auto-phrase;line-break:strict}
 .cs-opt i{width:9px;height:9px;border-radius:50%;background:var(--sc)}
 .cs-opt[aria-checked="true"]{border-color:var(--sc);background:color-mix(in srgb,var(--sc) 14%,var(--card))}
 .cs-dict{display:block;text-align:center;font-size:.8rem;color:var(--c-en);font-weight:700}
+/* ---------- 花と花図鑑 ---------- */
+svg.fl,.zk-art svg,.pop-art svg,.bed-art svg,.bag-art svg{--lf1:var(--leaf);--lf2:var(--leaf-2);--lf3:var(--leaf-3)}
+.plant svg.w2 .pt{opacity:.75;filter:saturate(.5)}.plant svg.w3 .pt{opacity:.5;filter:saturate(.2)}
+svg .spark{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}}
+.scene-links{display:flex;gap:6px}
+.bed{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border-radius:18px;padding:10px 14px 10px 10px;box-shadow:var(--shadow);cursor:pointer}
+.bed-art{width:64px;height:76px;border-radius:12px;background:linear-gradient(180deg,#DCEFFA,#F3F8FC);overflow:hidden;display:flex;align-items:flex-end}
+.bed-art svg{width:100%;height:100%}
+.bed-txt{min-width:0;display:flex;flex-direction:column;gap:5px}
+.bed-txt b{font-size:.9rem;font-weight:900}.bed-txt b span{font-weight:700;color:var(--ink-soft)}
+.bed-txt small{font-size:.72rem;color:var(--ink-soft);line-height:1.5}
+.bed-txt .g-bar span{background:linear-gradient(90deg,#F48FB1,#E8679A)}
+.bed-bag{border:0;border-radius:999px;background:var(--ink);color:var(--desk);font:inherit;font-size:.74rem;font-weight:900;padding:9px 12px;cursor:pointer;white-space:nowrap}
+.bed.locked .bed-art svg,svg.dim{filter:grayscale(1) brightness(.7);opacity:.5}
+.bag-now{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:center;background:var(--desk);border-radius:14px;padding:8px 12px 8px 8px}
+.bag-now .bed-art,.bag-now .bag-art{width:56px;height:66px}
+.bag-now b{display:block;font-size:.9rem}.bag-now small{display:block;font-size:.7rem;color:var(--ink-soft)}
+.bag-list{display:flex;flex-direction:column;gap:8px;max-height:42vh;overflow-y:auto}
+.bag-item{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:6px 12px 6px 6px;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.bag-art{width:52px;height:62px;border-radius:10px;background:linear-gradient(180deg,#DCEFFA,#F3F8FC);overflow:hidden;display:flex;align-items:flex-end}
+.bag-art svg{width:100%;height:100%}
+.bag-item .rar{font-size:.66rem;margin:0}.bag-item b{display:block;font-size:.88rem}.bag-item small{display:block;font-size:.7rem;color:var(--ink-soft)}
+.bag-go{font-size:.74rem;font-weight:900;color:var(--c-en)}
+.res-bed{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:.76rem;font-weight:700}
+.res-bed .bed-art{width:34px;height:40px;border-radius:8px}
+.res-bed small{display:block;font-weight:400;color:var(--ink-soft);font-size:.68rem}
+.plant-btn{border:0;border-radius:999px;background:var(--ink);color:var(--desk);font:inherit;font-size:.82rem;font-weight:900;padding:9px 14px;cursor:pointer;margin-top:2px}
+.pop-art{width:120px;height:140px;margin:0 auto 8px;border-radius:16px;background:linear-gradient(180deg,#DCEFFA,#F3F8FC);overflow:hidden;display:flex;align-items:flex-end;justify-content:center}
+.pop-art svg{width:100%;height:100%}
+.pop-art.dim svg{filter:grayscale(1) brightness(.35);opacity:.55}
+.rar{display:block;font-size:.8rem;letter-spacing:.1em;font-weight:900;margin-bottom:4px}
+.rar .off{opacity:.25}
+.rar.r1{color:#8A6B3F}.rar.r2{color:#2B8C7E}.rar.r3{color:#C8901A}.rar.r0{color:var(--leaf-2);letter-spacing:0}
+.zk-head{display:flex;flex-direction:column;gap:8px}
+.zk-count{display:flex;align-items:baseline;justify-content:space-between}
+.zk-count b{font-family:var(--f-mono);font-size:1.3rem}
+.zk-count span{font-size:.75rem;color:var(--ink-soft)}
+.zk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.zk{border:0;background:var(--card);border-radius:14px;padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:var(--shadow);cursor:pointer;font:inherit;color:var(--ink)}
+.zk .zk-art,.zk-tree .zk-art{width:100%;aspect-ratio:120/150;border-radius:10px;background:linear-gradient(180deg,#DCEFFA,#F3F8FC);overflow:hidden;display:flex;align-items:flex-end}
+.zk .zk-art svg,.zk-tree .zk-art svg{width:100%;height:100%}
+.zk .rar{font-size:.62rem;margin:4px 0 0}
+.zk b{font-size:.8rem}.zk small{font-size:.65rem;color:var(--ink-soft);font-family:var(--f-mono)}
+.zk.locked .zk-art svg{filter:grayscale(1) brightness(.35);opacity:.5}
+.zk.locked b{color:var(--ink-soft)}
+.zk-tree{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center}
+.zk-tree b{display:block;font-size:1rem}.zk-tree small{font-size:.72rem;color:var(--ink-soft)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 <style>
@@ -716,7 +764,7 @@ img{max-width:100%}
                 <div class="g-stage"><span class="g-lv" id="gLv">Lv.1</span><span id="gName">種</span></div>
                 <div class="g-top"><span class="health h0" id="gHealth">元気</span><span class="potion" id="gPotion" hidden></span></div>
               </div>
-              <button class="scene-link" id="garden" type="button">成長の記録 ›</button>
+              <div class="scene-links"><button class="scene-link" id="zkLink" type="button">花図鑑</button><button class="scene-link" id="garden" type="button">成長の記録 ›</button></div>
             </div>
             <button class="tree-btn" id="treeBtn" type="button" aria-label="学びの木にふれる"><span class="plant hero" id="plant" aria-hidden="true"></span></button>
             <div class="bubble" id="bubble" hidden></div>
@@ -726,6 +774,7 @@ img{max-width:100%}
             </div>
           </div>
           <div class="g-warn" id="gWarn" hidden></div>
+          <div class="bed" id="bed" role="button" tabindex="0" aria-label="花だん"><span class="bed-art" id="bedArt" aria-hidden="true"></span><div class="bed-txt"><b id="bedName">花だん</b><div class="g-bar"><span id="bedBar"></span></div><small id="bedNext"></small></div><button class="bed-bag" id="bedBag" type="button" hidden>タネ袋</button></div>
           <div class="rescue" id="rescue" hidden><span class="rescue-ico" aria-hidden="true"></span><span id="rescueText"></span><button type="button" id="rescueBtn">使う</button></div>
 
           <div class="subj-wrap"><div class="subj-row" id="subjRow" role="group" aria-label="教科を選ぶ"></div></div>
@@ -838,6 +887,7 @@ img{max-width:100%}
               <div class="xp-gain"><b id="resXp">+0</b> XP</div>
               <div class="g-bar"><span id="resBar"></span></div>
               <div class="g-next" id="resNext"></div>
+              <div class="res-bed" id="resBed" hidden></div>
             </div>
           </div>
           <div class="res-stats">
@@ -911,6 +961,16 @@ img{max-width:100%}
             <div class="rule"><span>大樹のあと、300XPためるごと</span><b>1本</b></div>
             <p class="note" style="margin-top:8px"><span class="nb">栄養剤は</span><span class="nb">何本でも</span><span class="nb">ためておけます。</span><span class="nb">休んだあとに</span><span class="nb">TOPで使うと、</span><span class="nb">1本につき</span><span class="nb">休んだ1日分が</span><span class="nb">取り消され、</span><span class="nb">減ったXPも</span><span class="nb">戻ります。</span></p>
           </div>
+          <div class="panel xp-rules">
+            <h2 class="sec-title" style="margin:0 0 8px">花だんで、花あつめ</h2>
+            <div class="rule"><span>木が Lv.5・Lv.8・Lv.11 になる</span><b>タネ1つ</b></div>
+            <div class="rule"><span>花が咲く</span><b>タネ1つ</b></div>
+            <div class="rule"><span>タネが満開になるまで<span class="sub">タネ → 芽 → 本葉 → つぼみ → 満開</span></span><b>600XP</b></div>
+            <div class="rule"><span>咲いた花は花図鑑へ</span><b>全12種</b></div>
+            <p class="note" style="margin-top:8px"><span class="nb">XPは</span><span class="nb">木と花だんの両方に入ります。</span><span class="nb">タネ袋から</span><span class="nb">好きなタネを選んで植え、</span><span class="nb">途中で植え替えてもOK</span><span class="nb">（育てた分は残ります）。</span></p>
+            <p class="note" style="margin-top:8px"><span class="nb">タネは</span><span class="nb">★ふつう・★★めずらしい・★★★きせきの</span><span class="nb">3種類。</span><span class="nb">まだ持っていない花が</span><span class="nb">出やすくなっています。</span></p>
+            <button class="btn2" id="growZk" type="button" style="margin-top:10px">花図鑑を見る</button>
+          </div>
           <div class="stages" id="stageList"></div>
         </div>
       </section>
@@ -930,6 +990,20 @@ img{max-width:100%}
       </section>
 
       <!-- HMM LIST -->
+      <section class="screen" id="scr-zukan" hidden>
+        <div class="navbar">
+          <button class="navbtn" id="zkBack" type="button">← TOP</button>
+          <span class="navtitle">花図鑑</span>
+          <span style="width:52px"></span>
+        </div>
+        <div class="scroll">
+          <div id="zkCoach"></div>
+          <div class="panel zk-head"><div class="zk-count"><b id="zkCount"></b><span>あつめた花</span></div><div class="g-bar"><span id="zkBar"></span></div></div>
+          <div class="panel zk-tree" id="zkTree" hidden><span class="zk-art" id="zkTreeArt"></span><div><span class="rar r0">はじまりの木</span><b>学びの大樹</b><small id="zkTreeDate"></small></div></div>
+          <div class="zk-grid" id="zkGrid"></div>
+        </div>
+      </section>
+
       <section class="screen" id="scr-sort" hidden>
         <div class="navbar">
           <button class="navbtn" id="sortBack" type="button">← TOP</button>
@@ -1000,6 +1074,16 @@ img{max-width:100%}
         <p class="note" id="orgSub"></p>
         <div class="rs-opts" id="orgOpts"></div>
         <button class="btn2" id="orgCancel" type="button">やめる</button>
+      </div>
+    </div>
+    <div class="sheet-back" id="bagSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bagTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="bagTitle">タネ袋</h2>
+        <div class="bag-now" id="bagNow"></div>
+        <p class="note">植えるタネを選んでね。途中で植え替えても、育てた分はタネ袋に残ります。</p>
+        <div class="bag-list" id="bagList"></div>
+        <button class="btn2" id="bagClose" type="button">閉じる</button>
       </div>
     </div>
     <div class="sheet-back" id="cardSheet" hidden>
@@ -1175,19 +1259,174 @@ function plantSVG(L,t,w,pot){
   if(pot)fall=fall.replace(/<ellipse cx="[\d.]+" cy="1[12]\d[^>]*rotate[^>]*>/g,'');
   return `<svg class="w${w}" viewBox="0 0 120 ${pot?162:128}" xmlns="http://www.w3.org/2000/svg">${pot?'':g}<g class="sway">${body}</g>${pot?g:''}${fall}</svg>`;
 }
+/* ---------- 花だん・タネ袋・花図鑑 ----------
+   木がLv.5・Lv.8・Lv.11になるとタネが1つ落ちてタネ袋へ。咲いた花からもタネがとれる。
+   花だんには、タネ袋から好きなタネを選んで植える（途中で植え替えても、育てた分は残る）。
+   木と花だんには、どちらにも同じXPが入る。 */
+const FLOWER_STAGES=[['タネ',0],['芽',60],['本葉',180],['つぼみ',360],['満開',600]];
+const FLOWER_XP=600;
+const SEED_DROP_L=[4,7,10];            /* Lv.5・Lv.8・Lv.11（0始まり） */
+const SEED_NAME=['','ふつうのタネ','めずらしいタネ','きせきのタネ'];
+const RARITY_W=[0,60,30,10];
+const FLOWERS=[
+  {id:'himawari',name:'ひまわり',r:1,k:'sun',c1:'#F6C431',c2:'#E9A21A',cc:'#6B4423',d:'太陽に向かってまっすぐ咲く、元気の花。'},
+  {id:'tulip',name:'チューリップ',r:1,k:'tulip',c1:'#E8445A',c2:'#B8283F',cc:'#B8283F',d:'春の花だんの主役。花びらがカップの形。'},
+  {id:'cosmos',name:'コスモス',r:1,k:'cosmos',c1:'#F48FB1',c2:'#E8679A',cc:'#F6C431',d:'秋の風にゆれる、やさしい花。'},
+  {id:'margaret',name:'マーガレット',r:1,k:'daisy',c1:'#FBFBF6',c2:'#D9DEE4',cc:'#F4B400',d:'白い花びらで、花うらないにも使われる。'},
+  {id:'pansy',name:'パンジー',r:1,k:'pansy',c1:'#7E57C2',c2:'#B39DDB',cc:'#F6C431',d:'人の顔のように見える、冬にも強い花。'},
+  {id:'asagao',name:'アサガオ',r:1,k:'morning',c1:'#4F7DF0',c2:'#DCE6FF',cc:'#FBFBF6',d:'朝に咲いて、昼にはしぼむ夏の花。'},
+  {id:'rose',name:'バラ',r:2,k:'rose',c1:'#D7263D',c2:'#9E1A2C',cc:'#9E1A2C',d:'花の女王。花びらが何重にも重なる。'},
+  {id:'gerbera',name:'ガーベラ',r:2,k:'gerbera',c1:'#FF7A3D',c2:'#FFB067',cc:'#5A3A1A',d:'ぱっと明るいオレンジ。見ると元気が出る。'},
+  {id:'suiren',name:'スイレン',r:2,k:'lotus',c1:'#F6A5C0',c2:'#E97FA6',cc:'#F6C431',d:'水の上に浮かんで咲く、静かな花。'},
+  {id:'sakura',name:'サクラ',r:2,k:'sakura',c1:'#F9C6D6',c2:'#F08DB0',cc:'#C2185B',d:'日本の春を代表する花。新しいスタートの合図。'},
+  {id:'goldrose',name:'金のバラ',r:3,k:'rose',c1:'#EDBE2F',c2:'#B8860B',cc:'#B8860B',gold:true,d:'がんばり続けた人だけが出会える、伝説の花。'},
+  {id:'niji',name:'虹のコスモス',r:3,k:'cosmos',rainbow:true,c1:'#F48FB1',c2:'#E8679A',cc:'#FBFBF6',d:'花びら一枚一枚がちがう色。めったに見られない。'}];
+const flowerById=id=>FLOWERS.find(f=>f.id===id);
+const stars=r=>'★'.repeat(r)+(r<3?`<span class="off">${'★'.repeat(3-r)}</span>`:'');
+grow.zukan=grow.zukan||{};grow.bag=grow.bag||[];grow.drops=grow.drops||[];
+const zukanKinds=()=>Object.keys(grow.zukan).length;
+const zukanTotal=()=>Object.values(grow.zukan).reduce((a,z)=>a+z.n,0);
+const stageOf=p=>{let S=0;FLOWER_STAGES.forEach(([,t],i)=>{if(p>=t)S=i;});return S;};
+function flowerInfo(){
+  if(!grow.g)return null;
+  const done=!!grow.g.bloom,p=done?FLOWER_XP:Math.max(0,Math.min(FLOWER_XP,grow.xp-grow.g.start)),S=stageOf(p);
+  const cur=FLOWER_STAGES[S][1],nx=FLOWER_STAGES[S+1];
+  return {S,p,name:FLOWER_STAGES[S][0],t:nx?(p-cur)/(nx[1]-cur):1,need:nx?nx[1]-p:0,nextName:nx?nx[0]:null,f:flowerById(grow.g.seed),done};
+}
+function pickSeed(){
+  const pool=FLOWERS.map(f=>[f.id,RARITY_W[f.r]/FLOWERS.filter(x=>x.r===f.r).length*(grow.zukan[f.id]?1:2)]);
+  let x=Math.random()*pool.reduce((a,[,w])=>a+w,0);for(const [id,w] of pool){if((x-=w)<=0)return id;}return pool[0][0];
+}
+const plantSeed=it=>{grow.g={start:grow.xp-(it.p||0),seed:it.id,bloom:''};};
+/* 木のレベルでタネ、XPで開花。返り値はポップアップで知らせる出来事 */
+function checkGarden(){
+  const ev=[],Lb=levelOf(grow.best);
+  SEED_DROP_L.forEach(L=>{if(Lb>=L&&!grow.drops.includes(L)){grow.drops.push(L);const it={id:pickSeed(),p:0};
+    if(!grow.g){plantSeed(it);ev.push({t:'seed',L,planted:true,id:it.id});}else{grow.bag.push(it);ev.push({t:'seed',L,id:it.id});}}});
+  if(Lb>=10&&!grow.treeDone)grow.treeDone=isoDay();
+  if(grow.g&&!grow.g.bloom&&grow.xp-grow.g.start>=FLOWER_XP){
+    grow.g.bloom=isoDay();const z=grow.zukan[grow.g.seed]||(grow.zukan[grow.g.seed]={n:0,first:isoDay()});z.n++;
+    const it={id:pickSeed(),p:0};grow.bag.push(it);ev.push({t:'bloom',id:grow.g.seed,newSeed:it.id});}
+  if(ev.length)store(KEY+'-grow',grow);
+  return ev;
+}
+function gardenPops(ev){
+  ev.forEach(e=>{const f=flowerById(e.id);
+    if(e.t==='seed')pop({img:'cheer',title:`木からタネが落ちてきた！`,msg:`<div class="pop-art">${flowerSVG(f,0,0,0,true)}</div>学びの木が <b>Lv.${e.L+1}</b> になったごほうびに、<b>${SEED_NAME[f.r]}</b>をもらいました。<br>`+(e.planted?'さっそく<b>花だん</b>に植えました。勉強するたびに、木といっしょに育ちます。':'<b>タネ袋</b>に入れました。花だんの「タネ袋」から植えられます。'),
+      acts:e.planted?[['花図鑑を見る',()=>show('zukan'),1],['育てる']]:[['あとで',null,1],['タネ袋を開く',openBag]]});
+    if(e.t==='bloom'){const z=grow.zukan[f.id],ns=flowerById(e.newSeed);
+      pop({img:'welcome',title:`${f.name}が咲きました！`,msg:`<div class="pop-art">${flowerSVG(f,4,1,0,true)}</div><span class="rar r${f.r}">${stars(f.r)}</span>${z.n===1?'<b>はじめての花！</b>花図鑑に登録しました。':`${z.n}回目の${f.name}です。`}<br>花から<b>${SEED_NAME[ns.r]}</b>がとれて、タネ袋に入りました。<br><small>花図鑑 ${zukanKinds()} / ${FLOWERS.length} 種類</small>`,
+        acts:[['あとで',null,1],['次のタネを植える',openBag]]});}
+  });
+}
+/* タネ袋 */
+function openBag(){
+  const box=$('bagList');box.innerHTML='';const fi=flowerInfo();
+  $('bagNow').innerHTML=fi?`<span class="bag-art">${flowerSVG(fi.f,fi.S,fi.t,0,true)}</span><span><small>いま花だんに植えているもの</small><b>${fi.done?fi.f.name+'（満開）':fi.S===0?SEED_NAME[fi.f.r]:SEED_NAME[fi.f.r]+'・'+fi.name}</b><small>${fi.done?'花図鑑に登録ずみ。次のタネを植えよう':`あと ${FLOWER_XP-fi.p} XP で満開`}</small></span>`:'<span><b>花だんは空いています</b><small>植えるタネを選んでね</small></span>';
+  if(!grow.bag.length)box.innerHTML='<div class="empty">タネ袋は空っぽです。<br>木がLv.5・Lv.8・Lv.11になったときや、花が咲いたときにタネがもらえます。</div>';
+  grow.bag.map((it,i)=>[it,i]).sort((a,b)=>flowerById(b[0].id).r-flowerById(a[0].id).r||b[0].p-a[0].p).forEach(([it,i])=>{const f=flowerById(it.id),S=stageOf(it.p),b=document.createElement('button');b.type='button';b.className='bag-item';
+    b.innerHTML=`<span class="bag-art">${flowerSVG(f,S,0,0,true)}</span><span><span class="rar r${f.r}">${stars(f.r)}</span><b>${SEED_NAME[f.r]}</b><small>${it.p?`${FLOWER_STAGES[S][0]}まで育てたもの（あと ${FLOWER_XP-it.p} XP）`:'まだ植えていない'}</small></span><span class="bag-go">植える</span>`;
+    b.onclick=()=>{const cur=flowerInfo();grow.bag.splice(i,1);if(cur&&!cur.done)grow.bag.push({id:grow.g.seed,p:cur.p});plantSeed(it);store(KEY+'-grow',grow);closeBag();
+      if(current==='top')renderTop();toast(cur&&!cur.done?'植え替えました。前のタネはタネ袋にしまいました':`${SEED_NAME[f.r]}を植えました`);};
+    box.appendChild(b);});
+  $('bagSheet').hidden=false;
+}
+function closeBag(){$('bagSheet').hidden=true;}
+/* 花だん（TOP） */
+function renderBed(){
+  const fi=flowerInfo(),el=$('bed');
+  $('bedBag').textContent=`タネ袋 ${grow.bag.length}`;$('bedBag').hidden=!grow.drops.length;
+  if(!grow.drops.length){const need=STAGES[4][1]-grow.best;
+    $('bedArt').innerHTML=flowerSVG(FLOWERS[0],0,0,0,true).replace('class="w0 fl"','class="w0 fl dim"');$('bedName').textContent='花だん';
+    $('bedNext').innerHTML=nb('学びの木が','Lv.5（若木）になると',`タネが落ちてくるよ（あと ${Math.max(0,need)} XP）`);$('bedBar').style.width=Math.min(100,grow.best/STAGES[4][1]*100)+'%';el.classList.add('locked');return;}
+  el.classList.remove('locked');
+  if(!fi){$('bedArt').innerHTML=flowerSVG(FLOWERS[0],0,0,0,true).replace(/<g class="sway">[\s\S]*?<\/g>/,'<g></g>');$('bedName').textContent='花だん（空き）';$('bedNext').textContent='タネ袋から植えるタネを選ぼう';$('bedBar').style.width='0%';return;}
+  $('bedArt').innerHTML=flowerSVG(fi.f,fi.S,fi.t,wilt(),true);
+  $('bedName').innerHTML=fi.done?`${esc(fi.f.name)}が満開！`:`${SEED_NAME[fi.f.r]}<span>・${fi.name}</span>`;
+  $('bedNext').innerHTML=fi.done?nb('花図鑑に登録しました。','タネ袋から次を植えよう'):nb(`あと ${fi.need} XP で`,`「${fi.nextName}」`);
+  $('bedBar').style.width=(fi.done?100:fi.p/FLOWER_XP*100)+'%';
+}
+/* 花の絵（木と同じ 120×128 の座標。pot=true で鉢植え 120×162） */
+function flowerSVG(f,S,t,w,pot){
+  w=w||0;t=Math.max(0,Math.min(1,t||0));const gy=112;let body='',g='',fx='';
+  const leaf=(x,y,rx,ry,a,c)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${a} ${x} ${y})" fill="${c}"/>`;
+  const lens=(cx,cy,L,W,a,c,cls='pt')=>`<path class="${cls}" d="M${cx} ${cy} Q ${cx+W} ${cy-L/2} ${cx} ${cy-L} Q ${cx-W} ${cy-L/2} ${cx} ${cy} Z" transform="rotate(${a} ${cx} ${cy})" fill="${c}"/>`;
+  const hue=i=>['#F06292','#FFB74D','#FFF176','#81C784','#64B5F6','#9575CD','#F48FB1','#4DD0E1'][i%8];
+  if(S===0){
+    const sc=f.r===3?'#E9B824':f.r===2?'#3FA796':'#8B5A2B';
+    body+=`<ellipse cx="60" cy="${gy-3}" rx="${12+t*2}" ry="4.5" fill="var(--soil)"/><ellipse cx="60" cy="${gy-8}" rx="8" ry="6.2" fill="${sc}"/>`;
+    if(f.r===2)body+=`<path d="M55 ${gy-11} Q60 ${gy-7} 65 ${gy-11}" stroke="#E9F7F3" stroke-width="1.4" fill="none"/><path d="M53.5 ${gy-7} Q60 ${gy-2.5} 66.5 ${gy-7}" stroke="#E9F7F3" stroke-width="1.4" fill="none"/>`;
+    if(f.r===3)body+=`<ellipse cx="57" cy="${gy-11}" rx="2.4" ry="1.5" fill="#FFF6C8"/>`+[[42,gy-20],[78,gy-22],[60,gy-30]].map(([x,y])=>`<path d="M${x} ${y-4} L${x+1} ${y-1} L${x+4} ${y} L${x+1} ${y+1} L${x} ${y+4} L${x-1} ${y+1} L${x-4} ${y} L${x-1} ${y-1} Z" fill="#F6D44C"/>`).join('');
+  }else{
+    const lotus=f.k==='lotus',H=lotus?[0,10,16,20,22][S]:[0,14,32,50,58][S]+t*6,top=gy-H;
+    const stemC=f.k==='sakura'?'var(--trunk)':'var(--lf2)';
+    if(lotus&&S>=2)body+=`<ellipse cx="60" cy="${gy-2}" rx="${26+S*3}" ry="7" fill="var(--lf1)"/><path d="M60 ${gy-2} L${86+S*3} ${gy-5}" stroke="var(--lf3)" stroke-width="1.4"/>`;
+    body+=`<path d="M60 ${gy} C 60 ${gy-H*0.4}, ${57+S} ${gy-H*0.7}, 60 ${top}" stroke="${stemC}" stroke-width="${f.k==='sakura'?3+S*0.4:2+S*0.35}" fill="none" stroke-linecap="round"/>`;
+    if(!lotus){
+      if(S===1)body+=leaf(65,top+2,6+t*2,3,-25,'var(--lf3)')+leaf(55,top+3,5,2.6,25,'var(--lf1)');
+      if(S>=2)body+=leaf(50,gy-H*0.35,10,4.2,25,'var(--lf1)')+leaf(70,gy-H*0.5,10,4.2,-25,'var(--lf2)');
+      if(S>=3)body+=leaf(52,gy-H*0.7,7,3.2,30,'var(--lf3)');
+    }
+    if(S===3){
+      body+=`<path class="pt" d="M60 ${top} q -9 -8 -5 -18 q 4 -6 5 -9 q 1 3 5 9 q 4 10 -5 18 z" fill="${f.rainbow?hue(0):f.c1}"/><path d="M60 ${top} q -6 -2 -8 -8 M60 ${top} q 6 -2 8 -8" stroke="var(--lf2)" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    }
+    if(S===4){
+      const R=20+t*2,cx=60,cy=top-R*0.7;
+      const radial=(n,len,wid,c,off=0,cls='pt')=>{let s='';for(let i=0;i<n;i++){s+=lens(cx,cy,len,wid,i*360/n+off,typeof c==='function'?c(i):c,cls);}return s;};
+      if(f.k==='sun'){body+=radial(18,R*1.15,R*0.22,f.c2,10)+radial(18,R*1.05,R*0.2,f.c1)+`<circle cx="${cx}" cy="${cy}" r="${R*0.48}" fill="${f.cc}"/>`;
+        for(let i=0;i<10;i++){const a=i*36*Math.PI/180;body+=`<circle cx="${cx+Math.cos(a)*R*0.27}" cy="${cy+Math.sin(a)*R*0.27}" r="1" fill="#3E2A16"/>`;}}
+      else if(f.k==='daisy'){body+=radial(16,R*1.05,R*0.17,f.c1)+radial(16,R*0.95,R*0.13,f.c2,11).replace(/class="pt"/g,'class="pt" opacity=".6"')+radial(16,R*1.05,R*0.15,f.c1,0)+`<circle cx="${cx}" cy="${cy}" r="${R*0.3}" fill="${f.cc}"/>`;}
+      else if(f.k==='cosmos'){body+=radial(8,R*1.1,R*0.38,f.rainbow?hue:f.c1)+radial(8,R*0.6,R*0.18,f.rainbow?(i=>'rgba(255,255,255,.35)'):f.c2,0)+`<circle cx="${cx}" cy="${cy}" r="${R*0.22}" fill="${f.cc}"/>`;
+        for(let i=0;i<8;i++){const a=(i*45-90)*Math.PI/180;body+=`<circle cx="${cx+Math.cos(a)*R*0.13}" cy="${cy+Math.sin(a)*R*0.13}" r=".9" fill="#E9A21A"/>`;}}
+      else if(f.k==='tulip'){const y=top;body+=`<path class="pt" d="M${cx-R*0.75} ${y-R*1.35} Q ${cx-R*0.95} ${y-R*0.2} ${cx} ${y} Q ${cx+R*0.95} ${y-R*0.2} ${cx+R*0.75} ${y-R*1.35} L ${cx+R*0.38} ${y-R*0.95} L ${cx} ${y-R*1.5} L ${cx-R*0.38} ${y-R*0.95} Z" fill="${f.c1}"/><path class="pt" d="M${cx} ${y} Q ${cx-R*0.45} ${y-R*0.6} ${cx} ${y-R*1.5} Q ${cx+R*0.45} ${y-R*0.6} ${cx} ${y} Z" fill="${f.c2}" opacity=".55"/>`;}
+      else if(f.k==='pansy'){const p=(a,c,s=1)=>{const r=a*Math.PI/180;return `<circle class="pt" cx="${cx+Math.cos(r)*R*0.48}" cy="${cy+Math.sin(r)*R*0.48}" r="${R*0.55*s}" fill="${c}"/>`;};
+        body+=p(-130,f.c1)+p(-50,f.c1)+p(180,f.c2,.9)+p(0,f.c2,.9)+p(90,f.c2)+`<circle cx="${cx}" cy="${cy+R*0.12}" r="${R*0.38}" fill="#3A2466" opacity=".75"/><circle cx="${cx}" cy="${cy+R*0.05}" r="${R*0.16}" fill="${f.cc}"/>`;}
+      else if(f.k==='morning'){body+=`<circle class="pt" cx="${cx}" cy="${cy}" r="${R*1.05}" fill="${f.c1}"/><circle cx="${cx}" cy="${cy}" r="${R*0.55}" fill="${f.c2}" opacity=".9"/>`;
+        for(let i=0;i<5;i++){const a=(i*72-90)*Math.PI/180;body+=`<path d="M${cx} ${cy} L ${cx+Math.cos(a)*R} ${cy+Math.sin(a)*R}" stroke="${f.c2}" stroke-width="1.6"/>`;}body+=`<circle cx="${cx}" cy="${cy}" r="${R*0.16}" fill="${f.cc}"/>`;}
+      else if(f.k==='rose'){body+=`<circle class="pt" cx="${cx}" cy="${cy}" r="${R*1.02}" fill="${f.c1}"/>`+radial(6,R*0.95,R*0.42,f.c2,30).replace(/class="pt"/g,'class="pt" opacity=".35"')+`<circle class="pt" cx="${cx}" cy="${cy}" r="${R*0.68}" fill="${f.c1}"/><path d="M${cx-R*0.5} ${cy} a ${R*0.5} ${R*0.5} 0 1 1 ${R*0.5} ${R*0.5} M${cx-R*0.25} ${cy} a ${R*0.25} ${R*0.25} 0 1 1 ${R*0.25} ${R*0.25} M${cx} ${cy-R*0.08} a ${R*0.1} ${R*0.1} 0 1 0 ${R*0.1} ${R*0.1}" stroke="${f.c2}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;}
+      else if(f.k==='gerbera'){body+=radial(20,R*1.12,R*0.16,f.c1)+radial(20,R*0.75,R*0.13,f.c2,9)+`<circle cx="${cx}" cy="${cy}" r="${R*0.3}" fill="${f.cc}"/><circle cx="${cx}" cy="${cy}" r="${R*0.16}" fill="#8A5A2B"/>`;}
+      else if(f.k==='lotus'){const y=gy-4;body+=lens(cx,y,R*1.3,R*0.32,-62,f.c2)+lens(cx,y,R*1.3,R*0.32,62,f.c2)+lens(cx,y,R*1.45,R*0.34,-32,f.c1)+lens(cx,y,R*1.45,R*0.34,32,f.c1)+lens(cx,y,R*1.55,R*0.36,0,f.c1)+lens(cx,y,R*1.1,R*0.3,-12,f.c2).replace('class="pt"','class="pt" opacity=".6"')+lens(cx,y,R*1.1,R*0.3,12,f.c2).replace('class="pt"','class="pt" opacity=".6"')+`<ellipse cx="${cx}" cy="${y-R*0.25}" rx="${R*0.28}" ry="${R*0.14}" fill="${f.cc}"/>`;}
+      else if(f.k==='sakura'){const pet=a=>{const r=a*Math.PI/180,px=cx+Math.cos(r)*R*0.5,py=cy+Math.sin(r)*R*0.5;return `<g class="pt" transform="rotate(${a+90} ${px} ${py})"><ellipse cx="${px}" cy="${py}" rx="${R*0.36}" ry="${R*0.5}" fill="${f.c1}"/><path d="M${px-2} ${py-R*0.5+.5} L${px} ${py-R*0.38} L${px+2} ${py-R*0.5+.5}" fill="var(--sky,#E4F3FA)"/></g>`;};
+        body+=[-90,-18,54,126,198].map(pet).join('')+`<circle cx="${cx}" cy="${cy}" r="${R*0.22}" fill="${f.c2}"/>`;for(let i=0;i<5;i++){const a=(i*72-90)*Math.PI/180;body+=`<circle cx="${cx+Math.cos(a)*R*0.3}" cy="${cy+Math.sin(a)*R*0.3}" r="1" fill="${f.cc}"/>`;}
+        body+=leaf(40,cy+8,4,2.2,-30,f.c1)+leaf(82,cy+16,3.6,2,40,f.c1);}
+      if(f.gold||f.rainbow)fx+=[[22,30],[98,26],[26,70],[96,74],[60,14]].map(([x,y],i)=>`<path class="spark" style="animation-delay:${i*.4}s" d="M${x} ${y-5} L${x+1.2} ${y-1.2} L${x+5} ${y} L${x+1.2} ${y+1.2} L${x} ${y+5} L${x-1.2} ${y+1.2} L${x-5} ${y} L${x-1.2} ${y-1.2} Z" fill="${f.gold?'#F6D44C':hue(i*2)}"/>`).join('');
+    }
+  }
+  if(pot)g+=`<path d="M33 ${gy+8} L87 ${gy+8} L80 ${gy+44} Q79 ${gy+48} 75 ${gy+48} L45 ${gy+48} Q41 ${gy+48} 40 ${gy+44} Z" fill="var(--pot)"/><path d="M36 ${gy+16} L84 ${gy+16} L83 ${gy+20} L37 ${gy+20} Z" fill="var(--pot-2)" opacity=".5"/><rect x="28" y="${gy-1}" width="64" height="11" rx="3" fill="var(--pot-2)"/><ellipse cx="60" cy="${gy+1}" rx="28" ry="4.5" fill="var(--soil-2)"/>`;
+  else g+=`<ellipse cx="60" cy="${gy+6}" rx="52" ry="12" fill="var(--soil)"/><ellipse cx="60" cy="${gy+3}" rx="40" ry="6" fill="var(--soil-2)" opacity=".5"/>`;
+  return `<svg class="w${w} fl" viewBox="0 0 120 ${pot?162:128}" xmlns="http://www.w3.org/2000/svg">${pot?'':g}<g class="sway">${body}</g>${pot?g:''}${fx}</svg>`;
+}
+/* 木の表示（花は花だんに別表示） */
+function potView(pot){const w=wilt(),gi=growInfo(grow.xp);return {svg:plantSVG(gi.L,gi.t,w,pot),lv:'Lv.'+(gi.L+1),name:gi.name,t:gi.t,L:gi.L,
+  next:gi.nextName?nb(`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb('育て切りました ・ ','次の栄養剤まで',`あと ${nextPotionIn()} XP`)};}
+/* 花図鑑 */
+function renderZukan(){
+  const k=zukanKinds();$('zkCount').textContent=`${k} / ${FLOWERS.length} 種類`;$('zkBar').style.width=(k/FLOWERS.length*100)+'%';
+  $('zkCoach').innerHTML=coach('read',!grow.drops.length?`学びの木が<b>Lv.5（若木）</b>になると、タネが落ちてくるよ。そこから花あつめが始まる！`:k===FLOWERS.length?'<b>全部そろった！</b>すごい。同じ花でも、咲かせた回数が記録されていくよ。':`まだ見つけていない花が<b>${FLOWERS.length-k}種類</b>。★★★の花はめったに咲かないよ。`);
+  const tr=$('zkTree');tr.hidden=!grow.treeDone;if(grow.treeDone){$('zkTreeArt').innerHTML=plantSVG(10,1,0,true);$('zkTreeDate').textContent=md(grow.treeDone)+' に大樹へ';}
+  const box=$('zkGrid');box.innerHTML='';
+  FLOWERS.forEach(f=>{const z=grow.zukan[f.id],c=document.createElement('button');c.type='button';c.className='zk'+(z?'':' locked');
+    c.innerHTML=`<span class="zk-art">${flowerSVG(f,4,1,0,true)}</span><span class="rar r${f.r}">${stars(f.r)}</span><b></b><small></small>`;
+    c.querySelector('b').textContent=z?f.name:'？？？';c.querySelector('small').textContent=z?`×${z.n}`:'まだ咲いていない';
+    c.onclick=()=>{if(!z){pop({img:'think',title:'まだ咲いていない花',msg:`<div class="pop-art dim">${flowerSVG(f,4,1,0,true)}</div><span class="rar r${f.r}">${stars(f.r)}</span>${f.r===3?'とてもめずらしい花。':f.r===2?'少しめずらしい花。':''}タネを育てて、咲かせてみよう！`});return;}
+      pop({img:'welcome',title:f.name,msg:`<div class="pop-art">${flowerSVG(f,4,1,0,true)}</div><span class="rar r${f.r}">${stars(f.r)}</span>${f.d}<br><small>はじめて咲いた日 ${md(z.first)} ・ 咲かせた回数 ${z.n}回</small>`});};
+    box.appendChild(c);});
+}
+
 function renderGarden(){
-  const gi=growInfo(grow.xp);
+  const gi=growInfo(grow.xp),pv=potView(false);
   const w=wilt();
-  $('plant').innerHTML=plantSVG(gi.L,gi.t,w);
+  $('plant').innerHTML=pv.svg;renderBed();
+  $('zkLink').textContent=`図鑑 ${zukanKinds()}/${FLOWERS.length}`;
   const hb=$('gHealth');hb.textContent=HEALTH[w];hb.className='health h'+w;
   const warn=$('gWarn');
   if(w>0){warn.hidden=false;warn.className='g-warn';warn.innerHTML=nb(`${missed}日休んだため、`,`木が「${HEALTH[w]}」`,'状態です',`（−${grow.lost}XP）。`,'今日1枚めくると','元気に戻ります。')+(grow.covered?nb(`（栄養剤で${grow.covered}日分を`,'取り消し済み）'):'');}
   else if(grow.last&&grow.last!==todayKey()){warn.hidden=false;warn.className='g-warn soft';warn.innerHTML=nb('今日はまだ','めくっていません。','今日中にめくらないと、','明日しおれ始めます。');}
   else warn.hidden=true;
-  $('gLv').textContent='Lv.'+(gi.L+1);$('gName').textContent=gi.name;
-  $('gBar').style.width=(gi.t*100)+'%';
-  $('gNext').innerHTML=gi.nextName?nb(`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb('育て切りました ・ ','次の栄養剤まで',`あと ${nextPotionIn()} XP`);
-  if(!gi.nextName)$('gBar').style.width=((POTION_EVERY-nextPotionIn())/POTION_EVERY*100)+'%';
+  $('gLv').textContent=pv.lv;$('gName').textContent=pv.name;
+  $('gBar').style.width=(pv.t*100)+'%';
+  $('gNext').innerHTML=pv.next;
+  if(!pv.flower&&!gi.nextName)$('gBar').style.width=((POTION_EVERY-nextPotionIn())/POTION_EVERY*100)+'%';
   $('gPotion').innerHTML=`${BOTTLE}<span>栄養剤 ×${grow.potions}</span>`;$('gPotion').hidden=grow.potions<1&&grow.best<MAX_XP;
   const eff=effMissed(),rescue=$('rescue');
   if(w>0&&grow.potions>0){rescue.hidden=false;$('rescueText').innerHTML=(potionMsg?potionMsg+' ':'')+nb('栄養剤1本で、','休んだ1日分を','取り消せます',`（残り${grow.potions}本）`);$('rescueBtn').textContent=eff>1?'1本使う':'使って元気にする';}
@@ -1211,7 +1450,7 @@ function switchDeck(id){set.deck=id;set.cat='';status=load(stKey(id),{})||{};sav
 let current='top';
 function show(name){current=name;stopTimer();
   document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);
-  if(name==='home')renderHome();if(name==='sort')renderSort();if(name==='rank')renderRank();if(name==='top')renderTop();if(name==='grow')renderStages();if(name==='list')renderList();if(name==='decks')renderDecks();if(name==='cards')renderCards();
+  if(name==='home')renderHome();if(name==='zukan')renderZukan();if(name==='sort')renderSort();if(name==='rank')renderRank();if(name==='top')renderTop();if(name==='grow')renderStages();if(name==='list')renderList();if(name==='decks')renderDecks();if(name==='cards')renderCards();
   const sc=document.querySelector('#scr-'+name+' .scroll');if(sc)sc.scrollTop=0;}
 
 /* ---------- TOP ---------- */
@@ -1298,9 +1537,9 @@ function bindDeckSwipe(){
 }
 
 function renderHome(){
-  const gi=growInfo(grow.xp),w=wilt();
-  $('homePlant').innerHTML=plantSVG(gi.L,gi.t,w,true);
-  $('homeLv').textContent='Lv.'+(gi.L+1);$('homeName').textContent=gi.name;
+  const w=wilt(),pv=potView(true);
+  $('homePlant').innerHTML=pv.svg;
+  $('homeLv').textContent=pv.lv;$('homeName').textContent=pv.name;
   const hh=$('homeHealth');hh.hidden=!w;if(w){hh.textContent=HEALTH[w];hh.className='health h'+w;}
   $('homeStreak').textContent=streak.n;
   const h=new Date().getHours();
@@ -1449,13 +1688,14 @@ function undo(){const h=history.pop();if(!h)return;
 
 /* ---------- RESULT ---------- */
 function finish(){
+  const gev=checkGarden();
   show('result');renderReport();
   $('resSub').textContent=`${queue.length}枚めくりました`+(set.timer?` ・ 時間切れ ${sess.timeouts}回`:'');
   $('rKnow').textContent=sess.know;$('rNo').textContent=sess.no;$('rHmm').textContent=sess.hmm;
   const gi=growInfo(grow.xp),L0=levelOf(sess.startXp);
-  {const y0=gi.L<=1?78:gi.L<=3?56:gi.L<=5?30:0;$('resPlant').innerHTML=plantSVG(gi.L,gi.t,wilt(),true).replace('viewBox="0 0 120 162"',`viewBox="${y0*0.37} ${y0} ${120-y0*0.74} ${162-y0}"`);}$('resXp').textContent='+'+sess.xp;
+  {const pv=potView(true),st=pv.flower?pv.flower.S:-1,y0=pv.flower?(st<=1?78:st<=2?56:30):gi.L<=1?78:gi.L<=3?56:gi.L<=5?30:0;$('resPlant').innerHTML=pv.svg.replace('viewBox="0 0 120 162"',`viewBox="${y0*0.37} ${y0} ${120-y0*0.74} ${162-y0}"`);}$('resXp').textContent='+'+sess.xp;
   $('resBar').style.width=(gi.t*100)+'%';
-  $('resNext').innerHTML=gi.nextName?nb(`Lv.${gi.L+1} ${gi.name} ・ `,`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb(`Lv.${gi.L+1} ${gi.name} ・ `,'次の栄養剤まで',`あと ${nextPotionIn()} XP`);
+  {const pv=potView(true);$('resNext').innerHTML=pv.flower?nb(`${pv.lv} ${pv.name} ・ `,pv.next):gi.nextName?nb(`Lv.${gi.L+1} ${gi.name} ・ `,`あと ${gi.need} XP で`,`「${gi.nextName}」`):nb(`Lv.${gi.L+1} ${gi.name} ・ `,'次の栄養剤まで',`あと ${nextPotionIn()} XP`);if(pv.flower)$('resBar').style.width=(pv.t*100)+'%';}
   const msgs=[];if(sess.startWilt>0&&wilt()===0)msgs.push(nb('木が元気を','取り戻しました！'));if(gi.L>L0)msgs.push(nb('レベルアップ！',`「${gi.name}」に`,'育ちました'));if(sess.potions>0)msgs.push(nb(`栄養剤を${sess.potions}本`,'もらいました',`（いま${grow.potions}本）`));
   const lu=$('levelUp');lu.hidden=!msgs.length;lu.innerHTML=msgs.join('<br>');
   {const Dk=deck(),ct=counts(),tot=sess.know+sess.no+sess.hmm,pct=Dk.items.length?Math.round(ct.know/Dk.items.length*100):0;let ck;
@@ -1469,7 +1709,8 @@ function finish(){
   else if(sess.potions>0)ps.push({img:'welcome',title:'栄養剤をもらいました',msg:`いま<b>${grow.potions}本</b>。休んだ日のあとに使うと、その日を取り消せます。`});
   if(Dk.items.length&&ct.know===Dk.items.length&&!load(KEY+'-done-'+Dk.id,0)){store(KEY+'-done-'+Dk.id,1);
     ps.push({img:'welcome',title:`${Dk.name} コンプリート！`,msg:`${Dk.items.length}枚すべて「覚えた」になりました。おめでとう！<br>ときどきランダムで見直すと、忘れにくくなるよ。`});}
-  if(ps.length)setTimeout(()=>ps.forEach(pop),500);}
+  {const fi=flowerInfo();$('resBed').hidden=!fi;if(fi)$('resBed').innerHTML=`<span class="bed-art">${flowerSVG(fi.f,fi.S,fi.t,0,true)}</span><span>花だん：${fi.done?esc(fi.f.name)+'が満開！':SEED_NAME[fi.f.r]+'・'+fi.name}<small>${fi.done?'タネ袋から次を植えよう':`あと ${fi.need} XP で「${fi.nextName}」`}</small></span>`;}
+  if(ps.length||gev.length)setTimeout(()=>{ps.forEach(pop);gardenPops(gev);},500);}
   resFilter='all';renderResList();
 }
 function row(x,withActions){
@@ -1875,6 +2116,7 @@ function openCardSheet(x,after){
 $('csClose').onclick=()=>{$('cardSheet').hidden=true;};
 $('cardSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)$('cardSheet').hidden=true;});
 $('findBtn').onclick=()=>openSort('all');
+$('bedBag').onclick=openBag;$('bed').onclick=e=>{if(e.target.closest('#bedBag'))return;if(grow.drops.length)openBag();else show('grow');};$('bagClose').onclick=closeBag;$('bagSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBag();});$('zkLink').onclick=()=>show('zukan');$('zkBack').onclick=()=>show('top');$('growZk').onclick=()=>show('zukan');
 
 /* ---------- 結果画面：このセットのカードを直す ---------- */
 let resFilter='all';
@@ -1911,6 +2153,7 @@ renderReport();setTimeout(flushPending,1500);
 $('homeStart').onclick=()=>show('top');
 $('homePlantBtn').onclick=()=>{const b=$('homePlantBtn');b.classList.remove('boing');void b.offsetWidth;b.classList.add('boing');};
 show('home');
+{const gev0=checkGarden();if(gev0.length){renderHome();setTimeout(()=>gardenPops(gev0),900);}}
 </script>
 
 <script>
