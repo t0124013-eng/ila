@@ -510,6 +510,19 @@ body{word-break:auto-phrase;line-break:strict}
 @keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .sheet-grip{width:40px;height:5px;border-radius:3px;background:var(--line);align-self:center}
 .sheet-title{margin:4px 0 0;font-size:1.15rem;font-weight:900}
+.pre-head{display:flex;flex-direction:column;gap:2px}
+.pre-sub{margin:0;font-size:.82rem;color:var(--ink-soft)}
+.pre-set{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.pre-lbl{font-size:.78rem;font-weight:700;color:var(--ink-soft)}
+.pre-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--desk-2,#EEF2F6);border-radius:14px;padding:4px}
+.pre-seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;font-size:1rem;padding:12px 6px;border-radius:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pre-seg button small{font-size:.7rem;font-weight:500;color:var(--ink-soft)}
+.pre-seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.pre-seg button[aria-pressed="true"] small{color:inherit;opacity:.8}
+.pre-desc{margin:0;font-size:.74rem;color:var(--ink-soft)}
+.pre-skip{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--ink-soft);padding:4px 0}
+.pre-skip input{width:18px;height:18px;margin:0}
+.pre-go{flex:2;border:0;border-radius:14px;background:var(--ink);color:var(--card);font:inherit;font-weight:900;font-size:1.05rem;padding:14px;cursor:pointer}
 .rs-opts{display:flex;flex-direction:column;gap:8px}
 .rs-opt{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:11px 12px;cursor:pointer}
 .rs-opt[aria-checked="true"]{border-color:var(--ink);background:var(--desk)}
@@ -620,7 +633,29 @@ body{word-break:auto-phrase;line-break:strict}
 .rank-btn small{display:block;font-size:.72rem;color:var(--ink-soft)}
 .rank-btn .arrow{margin-left:auto;color:var(--ink-soft)}
 /* ---------- カードを整理（虫眼鏡） ---------- */
-.find-row{display:flex;justify-content:flex-end;margin:-10px 0 -4px}
+.nav-right{display:flex;align-items:center;gap:2px}
+.auto-say{border:1.5px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:999px;padding:5px 10px;font:inherit;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.auto-say[aria-pressed="true"]{border-color:var(--c-en);background:color-mix(in srgb,var(--c-en) 14%,var(--card));color:var(--c-en)}
+.reveal-row{display:flex;gap:10px}
+.reveal-row[hidden]{display:none}
+.reveal-row .reveal-btn{flex:1;width:auto}
+.say-big{flex:none;width:76px;border:2px solid var(--c-en);background:var(--card);color:var(--c-en);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font:inherit}
+.say-big[hidden]{display:none}
+.say-big svg{width:28px;height:28px}.say-big small{font-size:.7rem;font-weight:900}
+.say-big.on{background:color-mix(in srgb,var(--c-en) 14%,var(--card))}
+.card:not(.revealed) .say-btn{display:none}
+.find-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-10px 0 -4px}
+.dir-seg{display:flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px}
+.dir-seg[hidden]{display:none}
+.dir-lbl{font-size:.7rem;font-weight:700;color:var(--muted,#6b7a8c);padding:0 6px 0 8px}
+.dir-seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:.76rem;font-weight:700;padding:5px 11px;border-radius:999px;cursor:pointer;min-height:30px}
+.dir-seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.card.je .word{font-family:var(--f-ja);font-weight:700;font-size:clamp(1.3rem,6vw,1.65rem);line-height:1.5}
+.card.je .meaning{font-family:var(--f-word);font-size:1.7rem;font-weight:700}
+.card.je:not(.revealed) .card-tools{display:none}
+.je-hint{font-family:ui-monospace,Menlo,monospace;font-size:1.05rem;letter-spacing:.18em;color:var(--muted,#6b7a8c);margin-top:6px}
+.card.je.revealed .je-hint{display:none}
+.dir-tag{font-size:.68rem;font-weight:700;border:1px solid currentColor;border-radius:999px;padding:1px 7px;margin-left:6px;opacity:.75}
 .find-btn{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px 6px 9px;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
 .find-btn svg{width:16px;height:16px}
 .find-box{position:relative}
@@ -837,6 +872,7 @@ img{max-width:100%}
             <div class="set-body">
               <div class="setting"><div class="setting-label">1セットの枚数</div><div class="chips" id="chSize"></div></div>
               <div class="setting"><div class="setting-label">解答までのタイマー</div><div class="chips" id="chTimer"></div></div>
+              <div class="setting"><div class="setting-label">スタート前の確認</div><div class="chips" id="chPre"></div></div>
               <div class="setting" id="saySetting"><div class="setting-label">発音を自動で流す</div><div class="chips" id="chSay"></div></div>
               <div class="setting" id="catSetting"><div class="setting-label" id="catLabel">分類</div><div class="chips" id="chCat"></div></div>
             </div>
@@ -873,13 +909,13 @@ img{max-width:100%}
         <div class="navbar">
           <button class="navbtn" id="quit" type="button">← TOP</button>
           <span class="navtitle" id="sessCount">1 / 20</span>
-          <button class="navbtn" id="undo" type="button">↺ 戻す</button>
+          <div class="nav-right"><button class="auto-say" id="autoSay" type="button" aria-pressed="false"></button><button class="navbtn" id="undo" type="button">↺ 戻す</button></div>
         </div>
         <div class="study-body">
           <div class="sess-bar"><span id="sessBar"></span></div>
           <div class="stage" id="stage"></div>
           <div class="actions-wrap">
-            <button class="reveal-btn" id="btnReveal" type="button">タップして答えを見る</button>
+            <div class="reveal-row" id="revealRow"><button class="say-big" id="btnSay" type="button" aria-label="発音を聞く"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.2 4.8a7 7 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><small>発音</small></button><button class="reveal-btn" id="btnReveal" type="button">タップして答えを見る</button></div>
             <div class="sort-guide" id="sortGuide" hidden>
               <p class="guide-text">スワイプかボタンで仕分けよう</p>
               <div class="actions">
@@ -1075,6 +1111,17 @@ img{max-width:100%}
         <div class="rs-actions"><button class="btn2" id="rsCancel" type="button">やめる</button><button class="rs-go" id="rsGo" type="button">リセット</button></div>
       </div>
     </div>
+    <div class="sheet-back" id="preSheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="preTitle">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <div class="pre-head"><h2 class="sheet-title" id="preTitle">この設定でめくる</h2><p class="pre-sub" id="preSub"></p></div>
+        <div class="pre-set" id="preDirSet"><div class="pre-lbl">出題の向き</div><div class="pre-seg" id="preDir"></div><p class="pre-desc" id="preDirDesc"></p></div>
+        <div class="pre-set"><div class="pre-lbl">答えが出るまでの時間</div><div class="chips" id="preTimer"></div></div>
+        <div class="pre-set" id="preSaySet"><div class="pre-lbl">発音</div><div class="chips" id="preSay"></div></div>
+        <label class="pre-skip"><input type="checkbox" id="preSkip">次からは確認しないで、すぐ始める</label>
+        <div class="rs-actions"><button class="btn2" id="preCancel" type="button">やめる</button><button class="pre-go" id="preGo" type="button">スタート</button></div>
+      </div>
+    </div>
     <div class="sheet-back" id="mixSheet" hidden>
       <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mixTitle">
         <div class="sheet-grip" aria-hidden="true"></div>
@@ -1203,7 +1250,7 @@ const hiddenCount=D=>D.builtin?D.all.length-D.items.length:0;
 const stKey=id=>KEY+'-st-'+id;
 
 let set=Object.assign({size:20,timer:+(load(KEY+'-timer',0))||5,deck:BUILTIN.id,cat:''},load(KEY+'-set',{}));
-if(!(set.timer>0))set.timer=5;if(typeof set.say!=='string')set.say='';
+if(!(set.timer>0))set.timer=5;if(typeof set.say!=='string')set.say='';if(set.dir!=='je')set.dir='ej';set.skipPre=!!set.skipPre;
 if('pos' in set){set.cat=set.pos?POS[set.pos]:'';delete set.pos;}
 if(!allDecks().some(d=>d.id===set.deck)){set.deck=BUILTIN.id;set.cat='';}
 const deck=()=>allDecks().find(d=>d.id===set.deck)||BUILTIN;
@@ -1496,7 +1543,7 @@ function chips(el,opts,key){el.innerHTML='';opts.forEach(([v,l])=>{const b=docum
   b.setAttribute('aria-pressed',set[key]===v);b.onclick=()=>{set[key]=v;saveAll();renderTop();};el.appendChild(b);});}
 const pool=mode=>deck().items.filter(x=>(!set.cat||x.c===set.cat)&&(mode==='all'||(mode==='weak'?(status[x.id]==='no'||status[x.id]==='hmm'):mode==='mix'?status[x.id]!=='know':mode==='new'?!status[x.id]:status[x.id]===mode)));
 function counts(){const c={know:0,no:0,hmm:0};deck().items.forEach(x=>{const s=status[x.id];if(c[s]!==undefined)c[s]++;});return c;}
-function renderTop(){
+function renderTop(){if(typeof renderDir==='function')renderDir();
   if(typeof renderReport==='function')renderReport();
   const D=deck(),c=counts(),t=D.items.length||1;
   renderSubjects();renderGarden();
@@ -1529,7 +1576,7 @@ function renderTop(){
   $('ctaMix').disabled=!pa;
   $('mixSub').textContent=pa?'ランダム・番号指定':'カードがありません';
   $('mixDots').innerHTML=pm?`<span><i style="background:var(--desk-2);border:1px solid var(--line)"></i>新しい ${pn}</span><span><i style="background:var(--no)"></i>覚えていない ${pno}</span><span><i style="background:var(--hmm)"></i>納得いかない ${pmh}</span>`:'';
-  chips($('chSize'),SIZE,'size');chips($('chTimer'),TIMER,'timer');chips($('chSay'),[['','流さない'],['show','カードが出たとき'],['reveal','答えを見たとき']],'say');$('saySetting').hidden=D.lang!=='en';
+  chips($('chSize'),SIZE,'size');chips($('chPre'),[[false,'毎回出す'],[true,'出さない']],'skipPre');chips($('chTimer'),TIMER,'timer');chips($('chSay'),[['','流さない'],['show','カードが出たとき'],['reveal','答えを見たとき']],'say');$('saySetting').hidden=D.lang!=='en';
   $('catSetting').hidden=!cats.length;$('catLabel').textContent=D.catLabel||'分類';
   if(cats.length)chips($('chCat'),[['','すべて'],...cats.map(x=>[x,x])],'cat');
 }
@@ -1632,21 +1679,44 @@ function renderSubjects(){
 /* ---------- STUDY ---------- */
 let queue=[],idx=0,history=[],sess=null;
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function startSession(mode,list,keepOrder){
+let preArgs=null;
+function startSession(mode,list,keepOrder,noAsk){
+  const n=(list?list.length:(set.size?Math.min(set.size,pool(mode).length):pool(mode).length));
+  if(!n)return;
+  if(noAsk||set.skipPre)return runSession(mode,list,keepOrder);
+  preArgs=[mode,list,keepOrder];renderPre();$('preSkip').checked=false;$('preSheet').hidden=false;
+  $('preSub').textContent=`${deck().name}・${n}枚`;$('preGo').focus();
+}
+function renderPre(){
+  const D=deck(),en=D.lang==='en'&&!D.formula;
+  $('preDirSet').hidden=!en;$('preSaySet').hidden=D.lang!=='en';
+  const g=$('preDir');g.innerHTML='';
+  [['ej','英語 → 日本語','英語を見て意味を答える'],['je','日本語 → 英語','意味を見て英語を答える']].forEach(([v,l,sm])=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(set.dir===v));b.innerHTML=`${l}<small>${sm}</small>`;b.onclick=()=>{set.dir=v;saveAll();renderPre();};g.appendChild(b);});
+  $('preDirDesc').textContent=set.dir==='je'?'日→英のとき、発音は答えを見たときに流れます':'';
+  const pc=(el,opts,key)=>{el.innerHTML='';opts.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(set[key]===v));b.onclick=()=>{set[key]=v;saveAll();renderPre();};el.appendChild(b);});};
+  pc($('preTimer'),TIMER,'timer');
+  pc($('preSay'),[['','流さない'],[set.dir==='je'?'reveal':'show',set.dir==='je'?'答えを見たとき':'カードが出たとき'],...(set.dir==='je'?[]:[['reveal','答えを見たとき']])],'say');
+  if(set.dir==='je'&&set.say==='show')$('preSay').querySelectorAll('.chip')[1].setAttribute('aria-pressed','true');
+}
+function closePre(){$('preSheet').hidden=true;preArgs=null;}
+function runSession(mode,list,keepOrder){
   let q=list?list.slice():pool(mode);if(!keepOrder)shuffle(q);if(set.size&&!list)q=q.slice(0,set.size);
   if(!q.length)return;
   queue=q;idx=0;history=[];sess={know:0,no:0,hmm:0,timeouts:0,noList:[],xp:0,potions:0,startXp:grow.xp,startWilt:wilt()};
-  show('study');renderStudy();
+  show('study');renderStudy();renderAutoSay();
 }
+function isJE(){return set.dir==='je'&&deck().lang==='en'&&!deck().formula;}
+function jeHint(f){return sayText(f).split(/(\s+)/).map(w=>/\s/.test(w)?'\u3000':[...w].map((c,i)=>i===0?c:/[A-Za-z]/.test(c)?'_':c).join(' ')).join('');}
 function cardEl(x,behind){
-  const d=document.createElement('div');d.className='card'+(behind?' behind':'');
+  const d=document.createElement('div');d.className='card'+(behind?' behind':'')+(isJE()?' je':'');
   const st=status[x.id],len=[...x.f].length;
-  d.innerHTML=`<div class="card-head"><span class="no">No.${String(x.n).padStart(3,'0')}</span><span>${st?`<span class="status-tag" style="background:var(--${st}-bg);color:var(--${st})">${LABEL[st]}</span>`:''}${x.c?`<span class="pos">${esc(x.c)}</span>`:''}</span></div>
+  d.innerHTML=`<div class="card-head"><span class="no">No.${String(x.n).padStart(3,'0')}${isJE()?'<span class="dir-tag">日→英</span>':''}</span><span>${st?`<span class="status-tag" style="background:var(--${st}-bg);color:var(--${st})">${LABEL[st]}</span>`:''}${x.c?`<span class="pos">${esc(x.c)}</span>`:''}</span></div>
   ${!behind?'<div class="heat" aria-hidden="true"></div><div class="timer"><span></span></div><div class="clock"></div>':''}
   <div class="face"><div class="word${len>40?' xlong':len>14?' long':''}"></div><div class="meaning"></div><div class="hint">タップして答えを見る</div>${deck().lang==='en'&&!behind?`<div class="card-tools"><button class="say-btn" type="button" aria-label="発音を聞く"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.2 4.8a7 7 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>発音</button><a class="ety-btn" target="_blank" rel="noopener">語源</a><a class="ety-btn dict" target="_blank" rel="noopener">辞書</a></div>`:''}<div class="timeout-note" hidden>時間切れ</div><div class="swipe-hint" aria-hidden="true"><span class="sh-no">← 覚えていない</span><span class="sh-hmm">↑ 納得いかない</span><span class="sh-know">覚えた →</span></div></div>
   <div class="stamp know">覚えた</div><div class="stamp sno">覚えていない</div><div class="stamp hmm">納得いかない</div>`;
-  const w=d.querySelector('.word');w.textContent=x.f;if(deck().lang)w.lang=deck().lang;
-  d.querySelector('.meaning').textContent=x.b;if(deck().formula)d.classList.add('formula');
+  const w=d.querySelector('.word'),mn=d.querySelector('.meaning');
+  if(isJE()){w.textContent=x.b;w.lang='ja';w.classList.remove('long','xlong');mn.textContent=x.f;mn.lang=deck().lang;}
+  else{w.textContent=x.f;if(deck().lang)w.lang=deck().lang;mn.textContent=x.b;}if(deck().formula)d.classList.add('formula');
   const tools=d.querySelector('.card-tools');
   if(tools){tools.querySelector('.say-btn').onclick=e=>{e.stopPropagation();speak(x.f,e.currentTarget);};
     const [ety,dic]=tools.querySelectorAll('.ety-btn');ety.href=etyUrl(x.f);dic.href='https://ejje.weblio.jp/content/'+encodeURIComponent(sayText(x.f));
@@ -1679,12 +1749,12 @@ function renderStudy(){
   $('undo').disabled=!history.length;
   if(queue[idx+1])stage.appendChild(cardEl(queue[idx+1],true));
   const top=cardEl(queue[idx],false);stage.appendChild(top);attach(top);startTimer(top);showSort(false);
-  if(set.say==='show'&&deck().lang==='en')speak(queue[idx].f);
+  if(set.say==='show'&&deck().lang==='en'&&!isJE())speak(queue[idx].f);
 }
-function showSort(on){$('btnReveal').hidden=on;$('sortGuide').hidden=!on;}
+function showSort(on){$('revealRow').hidden=on;$('sortGuide').hidden=!on;$('btnSay').hidden=deck().lang!=='en'||isJE();}
 function topCard(){return stage.querySelector('.card:not(.behind)');}
 function reveal(el){el=el||topCard();if(!el||el.dataset.gone)return;const was=el.classList.contains('revealed');el.classList.add('revealed');showSort(true);
-  if(!was&&set.say==='reveal'&&deck().lang==='en'&&queue[idx])speak(queue[idx].f);}
+  if(!was&&(set.say==='reveal'||(set.say==='show'&&isJE()))&&deck().lang==='en'&&queue[idx])speak(queue[idx].f);}
 function nudge(el){el=el||topCard();if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');
   const b=$('btnReveal');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}
 function attach(el){
@@ -1984,7 +2054,7 @@ $('quit').onclick=()=>show('top');
 $('undo').onclick=undo;
 $('btnReveal').onclick=()=>reveal();
 $('btnNo').onclick=()=>act('no');$('btnHmm').onclick=()=>act('hmm');$('btnKnow').onclick=()=>act('know');
-$('resAgain').onclick=()=>startSession('no',queue.filter(x=>status[x.id]==='no'));
+$('resAgain').onclick=()=>startSession('no',queue.filter(x=>status[x.id]==='no'),false,true);
 $('resTop').onclick=()=>show('top');
 $('listBack').onclick=()=>show('top');
 $('listStudy').onclick=()=>startSession(listMode,deck().items.filter(x=>status[x.id]===listMode));
@@ -2177,6 +2247,13 @@ function openCardSheet(x,after){
 $('csClose').onclick=()=>{$('cardSheet').hidden=true;};
 $('cardSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)$('cardSheet').hidden=true;});
 $('findBtn').onclick=()=>openSort('all');
+$('btnSay').onclick=e=>{if(queue[idx])speak(queue[idx].f,e.currentTarget);};
+function renderAutoSay(){const b=$('autoSay');b.hidden=deck().lang!=='en';const on=!!set.say;b.setAttribute('aria-pressed',String(on));b.textContent=on?'🔊 自動 ON':'🔇 自動 OFF';b.setAttribute('aria-label',on?'発音の自動再生：オン':'発音の自動再生：オフ');}
+$('autoSay').onclick=()=>{set.say=set.say?'':(isJE()?'reveal':'show');saveAll();renderAutoSay();const t=topCard();if(set.say&&queue[idx]&&(!isJE()||(t&&t.classList.contains('revealed'))))speak(queue[idx].f);};
+$('preCancel').onclick=closePre;$('preSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closePre();});
+$('preGo').onclick=()=>{const a=preArgs;if($('preSkip').checked){set.skipPre=true;saveAll();}closePre();renderTop();if(a)runSession(...a);if($('preSkip').checked)toast('次からすぐ始まります。設定の「スタート前の確認」で戻せます');};
+function renderDir(){const g=$('dirSeg');if(!g)return;g.hidden=!(deck().lang==='en'&&!deck().formula);g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.d===set.dir)));}
+renderDir();
 $('bedBag').onclick=openBag;$('bed').onclick=e=>{if(e.target.closest('#bedBag'))return;if(grow.drops.length)openBag();else show('grow');};$('bagClose').onclick=closeBag;$('bagSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBag();});$('zkLink').onclick=()=>show('zukan');$('zkBack').onclick=()=>show('top');$('growZk').onclick=()=>show('zukan');
 
 /* ---------- 結果画面：このセットのカードを直す ---------- */
