@@ -586,6 +586,10 @@ body{word-break:auto-phrase;line-break:strict}
 .pop h2{margin:0 0 8px;font-size:1.2rem;font-weight:900;text-wrap:balance}
 .pop-msg{font-size:.85rem;line-height:1.75;color:var(--ink-soft)}
 .pop-msg b{color:var(--ink)}
+.news-list{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;text-align:left}
+.news-list li{display:flex;flex-direction:column;gap:2px;background:var(--desk-2,#EEF2F6);border-radius:12px;padding:10px 12px;line-height:1.55}
+.news-list b{font-size:.9rem}
+.news-btn{display:block;margin:12px auto 0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}
 .pop-acts{display:flex;gap:8px;margin-top:18px}
 .pop-btn{flex:1;border:0;border-radius:14px;background:var(--ink);color:var(--desk);font:inherit;font-size:.9rem;font-weight:900;padding:13px 10px;cursor:pointer}
 .pop-btn.sub{flex:.7;background:var(--desk-2);color:var(--ink)}
@@ -886,6 +890,7 @@ img{max-width:100%}
               <div class="mini-card">問題</div>
               <div class="dir right"><span>→</span>覚えた</div>
             </div>
+            <button class="news-btn" id="newsBtn" type="button">最近のアップデートを見る</button>
             <p class="howto-note">カードをタップすると答えが出ます。<br>答えが腑に落ちないカードは上へ。あとで一覧から確かめられます。</p>
           </details>
 
@@ -1646,15 +1651,30 @@ function homeSensei(){
 $('homeSensei').onclick=()=>{const b=$('homeSensei');sayI=(sayI+1)%homeLines.length;$('homeSay').textContent=homeLines[sayI];
   const s=$('homeSay');s.style.animation='none';void s.offsetWidth;s.style.animation='';
   b.classList.remove('hop');void b.offsetWidth;b.classList.add('hop');};
+/* ---------- アップデートのお知らせ ----------
+   アップデートしたら、いちばん上に1件足す（id は日付。新しいほど大きく）。
+   開いたときに、まだ見ていないお知らせだけが出ます。初めて開いた人には出ません。 */
+const NEWS=[
+  {id:'2026-10-24',title:'アップデートのお知らせ',items:[
+    ['めくる前に設定を選べる','スタートする前に「出題の向き・答えが出るまでの時間・発音」を選べます。'],
+    ['日本語 → 英語 の出題','日本語の意味を見て、英語を答える練習ができます。'],
+    ['発音ボタンはカードの外へ','答えを見る前の発音は、画面左下の🔊ボタンで。右上の「自動」で自動読み上げをON／OFFできます。']]},
+];
+function newsMsg(n){return '<ul class="news-list">'+n.items.map(([t,d])=>`<li><b>${t}</b><span>${d}</span></li>`).join('')+'</ul>';}
+function newsPop(n,last){pop({img:'welcome',title:n.title,msg:newsMsg(n),acts:[[last?'OK':'次へ']]});}
+function checkNews(){const seen=load(KEY+'-news','');const un=NEWS.filter(n=>n.id>seen).sort((a,b)=>a.id<b.id?-1:1);
+  if(!NEWS.length)return false;store(KEY+'-news',NEWS[0].id);if(!un.length)return false;
+  setTimeout(()=>un.forEach((n,i)=>newsPop(n,i===un.length-1)),450);return true;}
 const MILESTONES=[3,7,14,30,50,100];
 function homePops(){
-  if(!load(KEY+'-hello',0)){store(KEY+'-hello',1);setTimeout(()=>{
+  if(!load(KEY+'-hello',0)){if(NEWS.length)store(KEY+'-news',NEWS[0].id);store(KEY+'-hello',1);setTimeout(()=>{
     pop({img:'welcome',title:'ようこそ、メモリーポットへ！',msg:`Unit1-3〜Unit18-20、あわせて<b>${BUILTINS.reduce((n,D)=>n+D.items.length,0).toLocaleString()}語</b>の英単語・熟語が入っています。<br>カードをめくるほど、鉢の木が育っていきます。`,acts:[['使い方を見る']]});
     pop({img:'mic',title:'カードは3方向に仕分け',msg:'<ul class="pop-dirs"><li class="k"><i>→</i>右：覚えた</li><li class="n"><i>←</i>左：覚えていない</li><li class="h"><i>↑</i>上：納得いかない</li></ul>カードをタップして答えを見てから、スワイプで仕分けよう。',acts:[['はじめる']]});
   },450);return;}
   if(wilt()&&load(KEY+'-wiltpop','')!==todayKey()){store(KEY+'-wiltpop',todayKey());
     setTimeout(()=>pop({img:'mic',title:'木がしおれています',msg:`${effMissed()}日お休みしていたね。<br>今日1枚でもめくれば、木は<b>すぐ元気に</b>戻るよ。`+(grow.potions?`<br>栄養剤（${grow.potions}本）を使うと、休んだ日を取り消せます。`:''),
       acts:[['あとで',null,1],['1セットやる',()=>show('top')]]}),450);return;}
+  checkNews();
   if(MILESTONES.includes(streak.n)&&load(KEY+'-mspop','')!==streak.n+'@'+streak.last){store(KEY+'-mspop',streak.n+'@'+streak.last);
     setTimeout(()=>pop({img:'run',title:`${streak.n}日連続！`,msg:`毎日つづけていて、えらい！<br>連続日数が長いほど、その日はじめての1枚の<b>ボーナスXP</b>が増えるよ（最大+14）。`,acts:[['今日もやる',()=>show('top')]]}),450);}
 }
@@ -2247,6 +2267,7 @@ function openCardSheet(x,after){
 $('csClose').onclick=()=>{$('cardSheet').hidden=true;};
 $('cardSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)$('cardSheet').hidden=true;});
 $('findBtn').onclick=()=>openSort('all');
+$('newsBtn').onclick=()=>{if(NEWS[0])newsPop(NEWS[0],true);};
 $('btnSay').onclick=e=>{if(queue[idx])speak(queue[idx].f,e.currentTarget);};
 function renderAutoSay(){const b=$('autoSay');b.hidden=deck().lang!=='en';const on=!!set.say;b.setAttribute('aria-pressed',String(on));b.textContent=on?'🔊 自動 ON':'🔇 自動 OFF';b.setAttribute('aria-label',on?'発音の自動再生：オン':'発音の自動再生：オフ');}
 $('autoSay').onclick=()=>{set.say=set.say?'':(isJE()?'reveal':'show');saveAll();renderAutoSay();const t=topCard();if(set.say&&queue[idx]&&(!isJE()||(t&&t.classList.contains('revealed'))))speak(queue[idx].f);};
