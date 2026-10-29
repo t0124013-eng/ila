@@ -648,6 +648,33 @@ body{word-break:auto-phrase;line-break:strict}
 .say-big svg{width:28px;height:28px}.say-big small{font-size:.7rem;font-weight:900}
 .say-big.on{background:color-mix(in srgb,var(--c-en) 14%,var(--card))}
 .card:not(.revealed) .say-btn{display:none}
+.quiz-q{font-family:var(--f-word);font-size:clamp(1.25rem,5.6vw,1.55rem);font-weight:700;line-height:1.6;text-align:center}
+.quiz-q .blank{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--ink);margin:0 .2em;color:transparent;line-height:1.2}
+.card.revealed .quiz-q .blank{color:var(--know);border-color:var(--know)}
+.quiz-ask{font-size:.78rem;color:var(--ink-soft)}
+.card.quiz .face{justify-content:flex-start;padding-top:52px;overflow-y:auto;touch-action:pan-y}
+.card.quiz{cursor:default}
+.quiz-judge{display:none;font-weight:900;font-size:1.05rem;padding:6px 16px;border-radius:999px}
+.card.revealed .quiz-judge{display:block}
+.quiz-mine{font-size:.8rem;color:var(--no);margin-top:-8px}
+.quiz-judge.ok{background:var(--know-bg);color:var(--know)}.quiz-judge.ng{background:var(--no-bg);color:var(--no)}
+.quiz-more{display:none;flex-direction:column;gap:10px;text-align:left;width:100%}
+.card.revealed .quiz-more{display:flex}
+.quiz-more .qm{background:var(--desk-2,#EEF2F6);border-radius:10px;padding:10px 12px;font-size:.88rem;line-height:1.6}
+.quiz-more .qm b{display:block;font-size:.7rem;color:var(--ink-soft);margin-bottom:2px}
+.quiz-more .say-btn{align-self:center}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice-grid[hidden],.quiz-next[hidden]{display:none}
+.choice{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:16px 10px;min-height:84px;font-family:var(--f-word);font-size:1.25rem;line-height:1.25;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+.choice:disabled{cursor:default;opacity:.55}
+.choice.right{opacity:1;border-color:var(--know);background:var(--know-bg);color:var(--know)}
+.choice.wrong{opacity:1;border-color:var(--no);background:var(--no-bg);color:var(--no)}
+.quiz-next{display:flex;flex-direction:column;gap:8px}
+.quiz-choices-done{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.quiz-choices-done .choice{min-height:40px;padding:6px;font-size:.9rem;box-shadow:none}
+.quiz-btns{display:flex;gap:8px}
+.quiz-btns .act{flex:1}
+.quiz-btns .go{flex:2;border:0;border-radius:12px;background:var(--ink);color:var(--card);font:inherit;font-weight:900;font-size:1rem;cursor:pointer;padding:14px}
 .find-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-10px 0 -4px}
 .dir-seg{display:flex;align-items:center;gap:2px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px}
 .dir-seg[hidden]{display:none}
@@ -841,7 +868,7 @@ img{max-width:100%}
               <span class="ds-card ds1 back" id="ds1">
                 <span class="ds-head"><span class="ds-tag" id="dsDeck">Unit1-3</span><span class="ds-cat" id="dsCat"></span></span>
                 <span class="ds-center">
-                  <span class="ds-count"><b id="dsWord">20</b>枚</span>
+                  <span class="ds-count"><b id="dsWord">20</b><span id="dsUnit">枚</span></span>
                   <span class="ds-play" id="dsPlay"><svg viewBox="0 0 12 14" aria-hidden="true"><path d="M1 1.2v11.6a.8.8 0 0 0 1.2.7l9.4-5.8a.8.8 0 0 0 0-1.4L2.2.5A.8.8 0 0 0 1 1.2z" fill="currentColor"/></svg>タップしてスタート</span>
                 </span>
                 <span class="ds-hint" id="dsHint">右にスワイプしても始まります <i aria-hidden="true">→</i></span>
@@ -921,6 +948,7 @@ img{max-width:100%}
           <div class="stage" id="stage"></div>
           <div class="actions-wrap">
             <div class="reveal-row" id="revealRow"><button class="say-big" id="btnSay" type="button" aria-label="発音を聞く"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.2 4.8a7 7 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><small>発音</small></button><button class="reveal-btn" id="btnReveal" type="button">タップして答えを見る</button></div>
+            <div class="choice-grid" id="choiceGrid" hidden role="group" aria-label="選択肢"></div>
             <div class="sort-guide" id="sortGuide" hidden>
               <p class="guide-text">スワイプかボタンで仕分けよう</p>
               <div class="actions">
@@ -953,7 +981,7 @@ img{max-width:100%}
             <div class="rs no">覚えていない<b id="rNo">0</b></div>
             <div class="rs hmm">納得いかない<b id="rHmm">0</b></div>
           </div>
-          <button class="cta" id="resAgain" type="button"><span><strong><span class="nb">覚えていない単語を</span><span class="nb">もう一度</span></strong><small id="resAgainSub"></small></span><span class="arrow">→</span></button>
+          <button class="cta" id="resAgain" type="button"><span><strong><span class="nb" id="resAgainLbl">覚えていない単語を</span><span class="nb">もう一度</span></strong><small id="resAgainSub"></small></span><span class="arrow">→</span></button>
           <h2 class="sec-title">このセットでめくったカード</h2>
           <p class="note" style="margin-top:-6px">仕分けをまちがえたカードは、右のボタンを押すと直せます。</p>
           <div class="st-chips" id="resChips" role="group" aria-label="仕分けでしぼりこむ"></div>
@@ -1243,6 +1271,13 @@ function nextPop(){const P=$('pop'),o=popQ.shift();if(!o){P.hidden=true;return;}
 const UNIT_SUB={'Unit15-17':'熟語','Unit18-20':'単語・熟語'};
 const BUILTINS=UNIT_DATA.map(([name,rows])=>({id:name.toLowerCase(),name,sub:UNIT_SUB[name]||'英単語',mark:(name.match(/\d+/)||[name[0]])[0],builtin:true,lang:'en',dict:true,
   items:rows.map(([f,b])=>({id:f+'|'+b,f,b}))}));
+/* 4択問題：[問題文, 選択肢1, 選択肢2, 選択肢3, 選択肢4, 正解(1-4), 解説, 和訳, 単元] */
+const QUIZ_DATA=[["英検2級 4択", [["The company decided to (　) its operations to overseas markets.", "expand", "expect", "explain", "explore", 1, "expand は「拡大する、広げる」の意味。", "その会社は海外市場へ事業を拡大することを決定した。", "語彙"], ["She was (　) of her son's achievement in the speech contest.", "proud", "sure", "fond", "glad", 1, "be proud of 〜で「〜を誇りに思う」。", "彼女はスピーチコンテストにおける息子の業績を誇りに思った。", "熟語"], ["Please (　) the lights when you leave the room.", "turn off", "turn on", "turn up", "turn down", 1, "turn off は「（電気・ガスなどを）消す」の意味。", "部屋を出るときは明かりを消してください。", "句動詞"], ["The heavy rain (　) the baseball game to be postponed.", "caused", "made", "let", "forced", 1, "cause A to do で「Aに〜させる、引き起こす」。", "大雨のため、野球の試合は延期となった。", "文法"], ["He is capable (　) solving difficult math problems.", "of", "in", "with", "to", 1, "be capable of 〜ing で「〜する能力がある」。", "彼は難しい数学の問題を解く能力がある。", "熟語"], ["I'm looking forward to (　) you at the party.", "seeing", "see", "saw", "seen", 1, "look forward to 〜ing で「〜するのを心待ちにする」。", "パーティーであなたにお会いするのを楽しみにしてます。", "文法"], ["The museum is (　) to the public on Mondays.", "closed", "close", "closing", "closely", 1, "be closed to 〜で「〜に対して閉館している」。", "その博物館は月曜日は休館です。", "語彙"], ["You had better (　) a doctor as soon as possible.", "see", "saw", "seen", "seeing", 1, "had better + 動詞の原形 で「〜したほうがよい」。", "できるだけ早く医者に見てもらったほうがいいですよ。", "文法"], ["This book is (　) reading for anyone interested in history.", "worth", "value", "price", "cost", 1, "be worth 〜ing で「〜する価値がある」。", "この本は歴史に興味がある人なら誰でも読む価値がある。", "熟語"], ["She speaks English as (　) as her sister does.", "well", "good", "better", "best", 1, "as 〜 as ... で「…と同じくらい〜」。動詞 speaks を修飾するので副詞 well。", "彼女は妹と同じくらい上手に英語を話す。", "文法"], ["He ran fast (　) to catch the last train.", "enough", "too", "so", "such", 1, "形容詞/副詞 + enough to do で「〜するのに十分〜だ」。", "彼は最終電車に間に合うように十分に速く走った。", "文法"], ["The novel was (　) interesting that I read it in one night.", "so", "such", "too", "very", 1, "so 〜 that ... で「とても〜なので…だ」。", "その小説はとても面白かったので、一晩で読んでしまった。", "文法"], ["My father is used (　) early in the morning.", "to getting", "to get", "getting", "get", 1, "be used to 〜ing で「〜することに慣れている」。", "私の父は早起きすることに慣れている。", "熟語"], ["I wish I (　) how to swim.", "knew", "know", "have known", "knowing", 1, "I wish + 仮定法過去で「今〜ならなあ」。", "泳ぎ方を知っていればなあ。", "仮定法"], ["The concert was cancelled (　) the bad weather.", "because of", "because", "although", "despite of", 1, "because of + 名詞句で「〜の理由で」。", "そのコンサートは悪天候のため中止になった。", "前置詞"], ["She tried her best, (　) she failed the exam.", "however", "although", "because", "therefore", 1, "文をつなぐ副詞として however「しかしながら」が適切。", "彼女は最善を尽くしたが、試験に落ちてしまった。", "接続詞/副詞"], ["This is the house (　) my grandfather built 50 years ago.", "which", "who", "whom", "whose", 1, "先行詞 the house（物）を修飾する目的格の関係代名詞 which。", "これは50年前に祖父が建てた家です。", "関係代名詞"], ["Do you know the boy (　) is playing the piano over there?", "who", "which", "whose", "whom", 1, "先行詞 the boy（人）を修飾する主格の関係代名詞 who。", "向こうでピアノを弾いている少年を知っていますか？", "関係代名詞"], ["This is the tallest building (　) I have ever seen.", "that", "which", "who", "what", 1, "先行詞に最上級（tallest）が含まれるため、関係代名詞は that が好ましい。", "これは私が今まで見た中で一番高いビルです。", "関係代名詞"], ["He asked me (　) I liked sports.", "if", "that", "what", "which", 1, "間接疑問文「〜かどうか」を表す if または whether。", "彼は私がスポーツが好きかどうかを尋ねた。", "接続詞"], ["The train (　) leave at 9:00 a.m. tomorrow.", "is to", "will", "shall", "must", 1, "be to 構文の予定・確実な未来を表す用法。", "その電車は明日の午前9時に出発することになっている。", "助動詞"], ["You (　) have told me the truth earlier.", "should", "must", "can", "may", 1, "should have p.p. で「〜すべきだったのに（実際はしなかった）」。", "もっと早く本当のことを言ってくれてよかったのに（言うべきだったのに）。", "助動詞"], ["The homework must (　) by Friday.", "be finished", "finish", "be finishing", "have finished", 1, "助動詞 + 受動態（be + 過去分詞）。宿題は終わらされるもの。", "宿題は金曜日までに終わらせなければならない。", "受動態"], ["English is (　) in many countries around the world.", "spoken", "spoke", "speak", "speaking", 1, "言語が話される受動態の表現。", "英語は世界中の多くの国で話されている。", "受動態"], ["He made his children (　) their rooms.", "clean", "cleaned", "to clean", "cleaning", 1, "使役動詞 make + O + 動詞の原形。", "彼は子どもたちに部屋を掃除させた。", "使役動詞"], ["I heard my name (　) from behind.", "called", "calling", "call", "to call", 1, "知覚動詞 hear + O + 過去分詞（名前が呼ばれる受動の関係）。", "後ろから自分の名前が呼ばれるのが聞こえた。", "知覚動詞"], ["It is important (　) English every day.", "to practice", "practicing", "practice", "practiced", 1, "It is 形容詞 + to do の形式主語構文。", "毎日英語を練習することが大切です。", "不定詞"], ["She went to the library (　) some books.", "to borrow", "borrowing", "borrow", "for borrow", 1, "目的を表す不定詞の副詞的用法「〜するために」。", "彼女は本を何冊か借りるために図書館に行った。", "不定詞"], ["Not (　) the reason, she kept silent.", "knowing", "knew", "known", "to know", 1, "分詞構文の否定形（Not を分詞の前に置く）。", "理由がわからなかったので、彼女は黙っていた。", "分詞構文"], ["(　) from the hill, the town looks like a toy.", "Seen", "Seeing", "See", "To see", 1, "分詞構文の受動（The town is seen... からの分詞構文）。", "丘から見ると、その町はおもちゃのように見える。", "分詞構文"], ["To tell (　) truth, I don't like natto.", "the", "a", "an", "one", 1, "To tell the truth で「実を言うと」。", "実を言うと、私は納豆が好きではない。", "熟語"], ["The number of tourists (　) increasing year by year.", "is", "are", "be", "am", 1, "The number of 〜（〜の数）は単数扱い。", "観光客の数は年々増加している。", "主語と動詞の一致"], ["A large number of students (　) absent today.", "are", "is", "be", "am", 1, "A large number of 〜（多くの〜）は複数扱い。", "今日は多くの生徒が欠席している。", "主語と動詞の一致"], ["Neither he nor I (　) responsible for the accident.", "am", "is", "are", "be", 1, "Neither A nor B のときは B（I）に動詞を一致させる。", "彼も私もその事故の責任はない。", "主語と動詞の一致"], ["Both Mary and John (　) interested in music.", "are", "is", "am", "be", 1, "Both A and B は常に複数扱い。", "メアリーもジョンも音楽に興味がある。", "主語と動詞の一致"], ["Not only you but also she (　) wrong.", "is", "are", "am", "be", 1, "Not only A but also B のときは B（she）に動詞を一致させる。", "あなただけでなく彼女も間違っている。", "主語と動詞の一致"], ["Hardly had I arrived at the station (　) the train left.", "when", "than", "then", "after", 1, "Hardly 〜 when 〜 で「〜するとすぐに…だった」。", "駅に到着するとすぐに電車が出発した。", "構文"], ["No sooner had she entered the room (　) the phone rang.", "than", "when", "then", "before", 1, "No sooner 〜 than 〜 で「〜するとすぐに…だった」。", "部屋に入るやいなや、電話が鳴った。", "構文"], ["It was not long (　) he realized his mistake.", "before", "after", "until", "when", 1, "It is not long before 〜 で「まもなく〜する」。", "それほど時間を置かずに、彼は自分の間違いに気づいた。", "構文"], ["Try (　) hard, he couldn't solve the puzzle.", "as", "though", "however", "despite", 1, "譲歩の倒置：Hard as he tried... と同じ意味。", "どんなに一生懸命試しても、彼はそのパズルを解けなかった。", "構文"], ["Supposing (　) it rains tomorrow, what shall we do?", "that", "if", "whether", "when", 1, "Supposing (that) 〜 で「もし〜なら」。", "もし明日雨が降ったら、私たちはどうしようか？", "接続詞"], ["The lecture was so difficult that (　) students could understand it.", "few", "a few", "little", "a little", 1, "few は「ほとんど〜ない（否定の意味）」。", "その講義は非常に難しかったので、理解できる学生はほとんどいなかった。", "代名詞/限定詞"], ["There is (　) hope of winning the game.", "little", "few", "a little", "a few", 1, "hope は不可算名詞なので little（ほとんど〜ない）。", "試合に勝つ見込みはほとんどない。", "代名詞/限定詞"], ["She has (　) friends in this city, so she is not lonely.", "a few", "few", "a little", "little", 1, "a few は「少しはいる（肯定の意味）」。", "彼女にはこの街に何人か友達がいるので、寂しくない。", "代名詞/限定詞"], ["All (　) glitters is not gold.", "that", "which", "who", "what", 1, "先行詞に all がある場合は関係代名詞に that を使う。", "光るものがすべて金とは限らない。", "関係代名詞"], ["He is (　) an honest man that everyone trusts him.", "such", "so", "too", "very", 1, "such + a/an + 形容詞 + 名詞 + that 構文。", "彼はとても正直な人なので、誰もが彼を信頼している。", "構文"], ["The weather (　) fine tomorrow, we will go on a picnic.", "permitting", "permitted", "permits", "to permit", 1, "独立分詞構文 (Weather permitting)。", "天気が許せば、私たちはピクニックに行く予定です。", "分詞構文"]], "2級"], ["英検準1級 4択", [["The politician's speech was full of (　) promises that he had no intention of keeping.", "empty", "vacant", "blank", "hollow", 1, "empty promises で「中身のない、口だけの約束」。", "その政治家の演説は、守るつもりもない口だけの約束で満ちていた。", "語彙"], ["Due to the sudden drop in temperature, the crops were severely (　) by frost.", "damaged", "ruined", "spoiled", "harmed", 1, "frost に害される文脈で damage が適切。", "急激な気温低下により、作物は霜の大きな被害を受けた。", "語彙"], ["She tried to (　) her disappointment by smiling.", "mask", "hide", "cover", "veil", 1, "感情などを「隠す、覆う」には mask が英検準1級頻出。", "彼女は笑顔で自分の失望を隠そうとした。", "語彙"], ["The company has (　) a reputation for excellent customer service.", "established", "founded", "organized", "instituted", 1, "establish a reputation で「評判を確立する」。", "その会社は優れた顧客サービスの評判を確立している。", "語彙"], ["He spoke with such (　) that everyone in the room believed him.", "conviction", "confidence", "assurance", "certainty", 1, "conviction は「確信、強い信念」。", "彼は強い確信を持って話したので、部屋にいる誰もが彼を信じた。", "語彙"], ["The local government took measures to (　) the spread of the infectious disease.", "curb", "control", "check", "halt", 1, "curb は「（悪いものを）抑制する、抑え込む」。", "地方自治体はその伝染病の拡大を抑え込むための措置を講じた。", "語彙"], ["The scientist's theory was (　) by recent empirical data.", "supported", "sustained", "maintained", "upheld", 1, "データが理論を「支持する、裏付ける」は support。", "その科学者の理論は最近の実験データによって裏付けられた。", "語彙"], ["Reading books helps (　) your horizons.", "broaden", "widen", "expand", "stretch", 1, "broaden one's horizons で「視野を広げる」。", "本を読むことは視野を広げるのに役立つ。", "熟語"], ["The negotiations between the two countries finally (　) in an agreement.", "resulted", "ended", "concluded", "terminated", 1, "result in 〜 で「〜という結果になる」。", "両国間の交渉はついに合意に達した。", "熟語"], ["She is (　) devoted to her research.", "deeply", "heavily", "strongly", "greatly", 1, "deeply devoted で「深く没頭している、献身している」。", "彼女は自分の研究に深く没頭している。", "副詞"], ["The committee will (　) the proposal tomorrow.", "evaluate", "estimate", "value", "assess", 1, "提案や価値を「評価する、査定する」には evaluate が一般的。", "委員会は明日その提案を評価（検討）する予定である。", "語彙"], ["His rude behavior was (　) of an apology.", "worthy", "worth", "deserving", "valuable", 1, "be worthy of 〜 で「〜に値する」。", "彼の無礼な振る舞いは謝罪に値するものだった。", "熟語"], ["The project was abandoned (　) financial difficulties.", "owing to", "owing", "due", "because", 1, "owing to + 名詞で「〜のために」。", "プロジェクトは財政難のために断念された。", "前置詞"], ["Hardly had she finished her presentation (　) the audience started applauding.", "when", "than", "then", "before", 1, "Hardly 〜 when 〜 で「〜するとすぐに…だった」。", "彼女がプレゼンを終えるやいなや、聴衆が拍手し始めた。", "構文"], ["No sooner did he enter the office (　) he realized he had left his keys at home.", "than", "when", "then", "before", 1, "No sooner 〜 than 〜 で「〜するとすぐに…だった」。", "オフィスに入るやいなや、彼は鍵を家に忘れてきたことに気づいた。", "構文"], ["Much (　) I would like to attend your wedding, I have to work.", "as", "though", "although", "however", 1, "譲歩を表す as（〜けれども）。", "あなたの結婚式に出席したいのはやまやまなのですが、仕事があります。", "構文"], ["Try as he (　), he could not persuade his boss.", "might", "may", "will", "would", 1, "Try as he might で「どんなに頑張っても」。", "どんなに頑張っても、彼は上司を説得できなかった。", "構文"], ["It is essential that every student (　) present at the orientation.", "be", "is", "were", "will be", 1, "要求・提案を表す形容詞が主節にある場合、that 節内は (should) 原形。", "すべての学生がオリエンテーションに出席することが不可欠である。", "仮定法"], ["If it (　) for your advice, I would have failed the exam.", "were not", "had not been", "had been not", "was not", 2, "If it had not been for 〜 で「もし〜がなかったならば」。", "あなたの助言がなければ、私は試験に落ちていただろう。", "仮定法"], ["Were it not for water, no living thing (　) survive.", "could", "can", "will", "may", 1, "If it were not for 〜 の倒置表現。", "もし水がなければ、いかなる生物も生き残れないだろう。", "仮定法"], ["It is high time you (　) studying for the exam.", "started", "start", "have started", "starting", 1, "It is high time + 主語 + 過去動詞 で「もうそろそろ〜してもよい頃だ」。", "もうそろそろ試験勉強を始めてもよい頃だ。", "仮定法"], ["Scarcely had we stepped outside (　) it began to pour.", "when", "than", "before", "then", 1, "Scarcely 〜 when 〜 で「〜するとすぐに…だった」。", "外に一歩踏み出すとすぐに激しい雨が降り出した。", "構文"], ["Little (　) that the decision would change the course of history.", "did they know", "they knew", "they did know", "knew they", 1, "否定語 Little が文頭にきて主語と動詞が倒置している。", "彼らはその決定が歴史の進路を変えることになるとは夢にも思っていなかった。", "倒置"], ["Not until the meeting was over (　) the truth.", "did he realize", "he realized", "he did realize", "realized he", 1, "Not until 〜 の倒置構文。", "会議が終わるまで、彼は真実を知らなかった。", "倒置"], ["Seldom (　) such a brilliant performance in my life.", "have I seen", "I have seen", "did I see", "saw I", 1, "否定語 Seldom が文頭にきて倒置。", "これほど素晴らしい演技は、これまでの人生で見たことがない。", "倒置"], ["So rapidly (　) technology advancing that we must keep learning.", "is", "does", "has", "was", 1, "So + 形容詞/副詞 + V + S の倒置構文。", "テクノロジーが非常に急速に進歩しているため、私たちは学び続けなければならない。", "倒置"], ["The new policy is (　) to improve working conditions.", "designed", "meant", "intended", "planned", 1, "be designed to do で「〜するように設計されている/意図されている」。", "その新しい方針は労働環境を改善するように意図されている。", "熟語"], ["She was on the (　) of resigning when she was offered a promotion.", "verge", "brink", "edge", "point", 1, "on the verge of 〜ing で「まさに〜しようとしている」。", "彼女は昇進を打診されたとき、まさに辞職しようとしていたところだった。", "熟語"], ["The politician refused to answer the journalist's (　) questions.", "pointed", "sharp", "keen", "acute", 1, "pointed questions で「鋭い、的を射た質問」。", "その政治家はジャーナリストの鋭い質問に答えるのを拒否した。", "語彙"], ["We must take every possible precaution (　) fire.", "against", "for", "to", "with", 1, "take precaution against 〜 で「〜に対する予防措置を講じる」。", "私たちは火災に対するあらゆる可能な予防措置を講じなければならない。", "熟語"], ["The economic downturn had a major (　) on small businesses.", "impact", "affect", "result", "consequence", 1, "have an impact on 〜 で「〜に影響を与える」。", "景気低迷は中小企業に大きな影響を与えた。", "語彙"], ["The discovery of the new vaccine is a major (　) in medical science.", "breakthrough", "breakdown", "breakout", "break-in", 1, "breakthrough で「大発見、突破口」。", "新しいワクチンの発見は医学における大きなブレイクスルーである。", "語彙"], ["He is (　) of telling lies to his parents.", "incapable", "unable", "impossible", "disable", 1, "be incapable of 〜ing で「〜する能力がない」。", "彼は両親に嘘をつくような人間ではない。", "熟語"], ["The government is facing severe criticism (　) its handling of the crisis.", "regarding", "regard", "regarded", "regards", 1, "regarding は前置詞として「〜に関して」。", "政府はその危機の対応に関して厳しい批判に直面している。", "前置詞"], ["The detective followed the suspect (　) he would not be noticed.", "lest", "unless", "if", "though", 1, "lest 〜 (should) ... で「〜しないように」。", "探偵は気づかれないように容疑者を尾行した。", "接続詞"], ["Please let me know (　) any changes occur in the schedule.", "should", "if", "supposing", "provided", 1, "If any changes should occur の倒置表現。", "スケジュールに変更が生じた場合は、お知らせください。", "仮定法"], ["You may use the equipment (　) you follow the safety guidelines.", "provided", "providing", "supposing", "unless", 1, "provided (that) 〜 で「もし〜という条件で」。", "安全ガイドラインに従うという条件で、その機器を使用してもよい。", "接続詞"], ["The museum exhibits a wide (　) of ancient artifacts.", "array", "range", "variety", "collection", 1, "a wide array of 〜 で「多様な〜」。", "その博物館には多種多様な古代の工芸品が展示されている。", "語彙"], ["Her dedication to the project is truly (　).", "admirable", "admiring", "admired", "admirably", 1, "admirable は「称賛に値する、見事な」。", "プロジェクトに対する彼女の献身は本当に見事なものである。", "語彙"], ["The athlete broke the world record, (　) surprised everyone.", "which", "what", "that", "who", 1, "非制限用法の関係代名詞 which。", "そのアスリートは世界記録を更新し、それが皆を驚かせた。", "関係代名詞"], ["That is (　) I wanted to talk to you about.", "what", "which", "that", "where", 1, "先行詞を含んだ関係代名詞 what（〜こと）。", "それこそが私があなたにお話ししたかったことです。", "関係代名詞"], ["Choose (　) book you like best from this shelf.", "whichever", "whatever", "whoever", "however", 1, "whichever + 名詞 で「どちらの〜を…しようとも」。", "この棚からあなたが一番好きな本をどれでも選びなさい。", "関係代名詞"], ["No matter (　) hard you try, you cannot finish this in a day.", "how", "what", "which", "who", 1, "No matter how + 形容詞/副詞 で「どんなに〜しても」。", "どんなに頑張っても、これを1日で終わらせることはできない。", "副詞節"], ["The rumor proved to (　) false.", "be", "have been", "being", "been", 1, "prove to be 〜 で「〜であることが判明する」。", "その噂は嘘であることが判明した。", "動詞"], ["The meeting was put (　) until next week due to the typhoon.", "off", "on", "up", "down", 1, "put off で「延期する」。", "台風のため、会議は来週まで延期された。", "句動詞"], ["He is second to (　) when it comes to computer programming.", "none", "no one", "anybody", "everyone", 1, "second to none で「誰にも負けない、随一の」。", "コンピュータプログラミングにかけては、彼は誰にも引けを取らない。", "熟語"], ["The factory releases a large amount of toxic (　) into the atmosphere.", "emissions", "substances", "gases", "waste", 1, "toxic emissions で「有毒排出物」。", "その工場は大気中に多量の有毒排出物を放出している。", "語彙"], ["She made every (　) to ensure the event's success.", "effort", "attempt", "endeavor", "try", 1, "make every effort to do で「あらゆる努力をする」。", "彼女はイベントの成功を確実にすべく、あらゆる努力をした。", "熟語"], ["It was (　) a success that the company decided to expand the project.", "such", "so", "too", "very", 1, "such + a/an + 形容詞 + 名詞 + that 構文。", "それは大変な成功だったので、会社はそのプロジェクトを拡大することに決めた。", "構文"], ["The committee reached a (　) decision after hours of discussion.", "unanimous", "united", "common", "general", 1, "unanimous decision で「全会一致の決定」。", "委員会は数時間の議論の末、全会一致の決定に達した。", "語彙"]], "準1"]];
+const BLANK_RE=/[（(]\s*[　 ]*\s*[)）]/;
+const QUIZZES=QUIZ_DATA.map(([name,rows,mark])=>({id:'quiz-'+name,name,sub:'4択問題',mark,builtin:true,lang:'en',quiz:true,
+  items:rows.map(([q,c1,c2,c3,c4,a,ex,ja,unit])=>{const ch=[c1,c2,c3,c4].map(String),ans=ch[a-1];
+    return {id:'q|'+q,f:q,b:'正解：'+ans+(ja?'　'+ja:''),c:unit||'',q,ch,a:a-1,ans,ex:ex||'',ja:ja||'',full:q.replace(BLANK_RE,ans)};})}));
+BUILTINS.push(...QUIZZES);
 const BUILTIN=BUILTINS[0];
 let custom=load(KEY+'-decks',[])||[];
 const allDecks=()=>[...BUILTINS,...custom];
@@ -1561,7 +1596,7 @@ function renderTop(){if(typeof renderDir==='function')renderDir();
   const cats=[...new Set(D.items.map(x=>x.c).filter(Boolean))];
   if(set.cat&&!cats.includes(set.cat))set.cat='';
   const pn=pool('new').length,pno=pool('no').length,n=set.size?Math.min(set.size,pn):pn;
-  $('ctaSub').textContent=pn?`${n}枚 ・ タイマー${set.timer}秒${set.cat?' ・ '+set.cat:''}`:'ランダムで復習できます';
+  $('dsUnit').textContent=D.quiz?'問':'枚';$('ctaSub').textContent=pn?`${n}${D.quiz?'問':'枚'} ・ タイマー${set.timer}秒${set.cat?' ・ '+set.cat:''}`:'ランダムで復習できます';
   $('ctaNew').disabled=!pn;
   topPreview=shuffle(pool('new'));if(set.size)topPreview=topPreview.slice(0,set.size);
   const nx=topPreview[0];
@@ -1655,6 +1690,9 @@ $('homeSensei').onclick=()=>{const b=$('homeSensei');sayI=(sayI+1)%homeLines.len
    アップデートしたら、いちばん上に1件足す（id は日付。新しいほど大きく）。
    開いたときに、まだ見ていないお知らせだけが出ます。初めて開いた人には出ません。 */
 const NEWS=[
+  {id:'2026-10-29',title:'アップデートのお知らせ',items:[
+    ['4択問題が加わりました','単語帳の並びに「英検2級 4択」「英検準1級 4択」が入りました。選択肢をタップして答えたら、解説と和訳を見て、単語と同じようにスワイプで仕分けます。'],
+    ['答えの位置は毎回シャッフル','同じ問題でも、選択肢の並びは毎回変わります。']]},
   {id:'2026-10-24',title:'アップデートのお知らせ',items:[
     ['めくる前に設定を選べる','スタートする前に「出題の向き・答えが出るまでの時間・発音」を選べます。'],
     ['日本語 → 英語 の出題','日本語の意味を見て、英語を答える練習ができます。'],
@@ -1685,8 +1723,8 @@ function renderSubjects(){
     const st=D.id===set.deck?status:(load(stKey(D.id),{})||{});
     const know=D.items.filter(x=>st[x.id]==='know').length,pct=D.items.length?Math.round(know/D.items.length*100):0;
     const b=document.createElement('button');b.type='button';b.className='subj';b.setAttribute('aria-pressed',D.id===set.deck);
-    b.innerHTML=`<span class="subj-mark"></span><span class="subj-sub"></span><span class="subj-name"></span><span class="subj-meta">${D.items.length}枚 ・ ${pct}%</span><span class="subj-bar"><span style="width:${pct}%"></span></span>`;
-    b.querySelector('.subj-mark').textContent=D.mark||[...D.name][0];b.style.setProperty('--c',deckColor(D));
+    b.innerHTML=`<span class="subj-mark"></span><span class="subj-sub"></span><span class="subj-name"></span><span class="subj-meta">${D.items.length}${D.quiz?'問':'枚'} ・ ${pct}%</span><span class="subj-bar"><span style="width:${pct}%"></span></span>`;
+    b.querySelector('.subj-mark').textContent=D.mark||[...D.name][0];if([...(D.mark||'')].length>1)b.querySelector('.subj-mark').style.fontSize='.72rem';b.style.setProperty('--c',deckColor(D));
     b.querySelector('.subj-sub').textContent=D.sub||'自作';
     if(D.sample)b.querySelector('.subj-sub').insertAdjacentHTML('beforeend','<span class="badge">サンプル</span>');
     b.querySelector('.subj-name').textContent=D.name;
@@ -1705,17 +1743,18 @@ function startSession(mode,list,keepOrder,noAsk){
   if(!n)return;
   if(noAsk||set.skipPre)return runSession(mode,list,keepOrder);
   preArgs=[mode,list,keepOrder];renderPre();$('preSkip').checked=false;$('preSheet').hidden=false;
-  $('preSub').textContent=`${deck().name}・${n}枚`;$('preGo').focus();
+  $('preSub').textContent=`${deck().name}・${n}${isQuiz()?'問':'枚'}`;$('preGo').focus();
 }
 function renderPre(){
-  const D=deck(),en=D.lang==='en'&&!D.formula;
+  const D=deck(),en=D.lang==='en'&&!D.formula&&!D.quiz;
   $('preDirSet').hidden=!en;$('preSaySet').hidden=D.lang!=='en';
   const g=$('preDir');g.innerHTML='';
   [['ej','英語 → 日本語','英語を見て意味を答える'],['je','日本語 → 英語','意味を見て英語を答える']].forEach(([v,l,sm])=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(set.dir===v));b.innerHTML=`${l}<small>${sm}</small>`;b.onclick=()=>{set.dir=v;saveAll();renderPre();};g.appendChild(b);});
   $('preDirDesc').textContent=set.dir==='je'?'日→英のとき、発音は答えを見たときに流れます':'';
   const pc=(el,opts,key)=>{el.innerHTML='';opts.forEach(([v,l])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',String(set[key]===v));b.onclick=()=>{set[key]=v;saveAll();renderPre();};el.appendChild(b);});};
   pc($('preTimer'),TIMER,'timer');
-  pc($('preSay'),[['','流さない'],[set.dir==='je'?'reveal':'show',set.dir==='je'?'答えを見たとき':'カードが出たとき'],...(set.dir==='je'?[]:[['reveal','答えを見たとき']])],'say');
+  if(D.quiz){pc($('preSay'),[['','流さない'],['reveal','答えたとき（正解の文）']],'say');if(set.say==='show')$('preSay').querySelectorAll('.chip')[1].setAttribute('aria-pressed','true');}
+  else pc($('preSay'),[['','流さない'],[set.dir==='je'?'reveal':'show',set.dir==='je'?'答えを見たとき':'カードが出たとき'],...(set.dir==='je'?[]:[['reveal','答えを見たとき']])],'say');
   if(set.dir==='je'&&set.say==='show')$('preSay').querySelectorAll('.chip')[1].setAttribute('aria-pressed','true');
 }
 function closePre(){$('preSheet').hidden=true;preArgs=null;}
@@ -1725,9 +1764,39 @@ function runSession(mode,list,keepOrder){
   queue=q;idx=0;history=[];sess={know:0,no:0,hmm:0,timeouts:0,noList:[],xp:0,potions:0,startXp:grow.xp,startWilt:wilt()};
   show('study');renderStudy();renderAutoSay();
 }
-function isJE(){return set.dir==='je'&&deck().lang==='en'&&!deck().formula;}
+function isJE(){return set.dir==='je'&&deck().lang==='en'&&!deck().formula&&!deck().quiz;}
+const isQuiz=()=>!!deck().quiz;
 function jeHint(f){return sayText(f).split(/(\s+)/).map(w=>/\s/.test(w)?'\u3000':[...w].map((c,i)=>i===0?c:/[A-Za-z]/.test(c)?'_':c).join(' ')).join('');}
-function cardEl(x,behind){
+function quizCardEl(x,behind){
+  const d=document.createElement('div');d.className='card quiz'+(behind?' behind':'');
+  const st=status[x.id],parts=x.q.split(BLANK_RE);
+  d.innerHTML=`<div class="card-head"><span class="no">No.${String(x.n).padStart(3,'0')}</span><span>${st?`<span class="status-tag" style="background:var(--${st}-bg);color:var(--${st})">${LABEL[st]}</span>`:''}${x.c?`<span class="pos">${esc(x.c)}</span>`:''}</span></div>
+  ${!behind?'<div class="heat" aria-hidden="true"></div><div class="timer"><span></span></div><div class="clock"></div>':''}
+  <div class="face"><div class="quiz-q" lang="en"></div><div class="quiz-ask">（　）に入るものを選ぼう</div><div class="quiz-judge"></div><div class="timeout-note" hidden>時間切れ</div>
+  <div class="quiz-more"></div><div class="swipe-hint" aria-hidden="true"><span class="sh-no">← 覚えていない</span><span class="sh-hmm">↑ 納得いかない</span><span class="sh-know">覚えた →</span></div></div>
+  <div class="stamp know">覚えた</div><div class="stamp sno">覚えていない</div><div class="stamp hmm">納得いかない</div>`;
+  const qq=d.querySelector('.quiz-q');qq.append(parts[0]);if(parts.length>1){const b=document.createElement('span');b.className='blank';b.textContent=x.ans;qq.append(b,parts.slice(1).join(''));}
+  if(!behind){const m=d.querySelector('.quiz-more');
+    if(x.ex)m.insertAdjacentHTML('beforeend',`<div class="qm"><b>解説</b>${esc(x.ex)}</div>`);
+    if(x.ja)m.insertAdjacentHTML('beforeend',`<div class="qm"><b>和訳</b>${esc(x.ja)}</div>`);
+    m.insertAdjacentHTML('beforeend','<button class="say-btn" type="button" aria-label="正解の文を聞く"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" fill="currentColor"/><path d="M13 7a4 4 0 0 1 0 6M15.2 4.8a7 7 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>文を聞く</button>');
+    const sb=m.querySelector('.say-btn');sb.onclick=e=>{e.stopPropagation();speak(x.full,e.currentTarget);};['pointerdown','pointerup','pointermove'].forEach(t=>sb.addEventListener(t,e=>e.stopPropagation()));}
+  return d;
+}
+let qState=null;
+function renderChoices(x){
+  const g=$('choiceGrid');g.innerHTML='';const order=shuffle([0,1,2,3]);qState={x,order,picked:null,ok:false};
+  order.forEach((i,k)=>{const b=document.createElement('button');b.type='button';b.className='choice';b.lang='en';b.textContent=x.ch[i];b.dataset.i=i;b.setAttribute('aria-label',`${k+1}. ${x.ch[i]}`);b.onclick=()=>quizAnswer(i);g.appendChild(b);});
+}
+function quizAnswer(i){
+  const el=topCard();if(!el||!qState||el.classList.contains('revealed'))return;
+  const x=qState.x,ok=i===x.a;qState.picked=i;qState.ok=ok;stopTimer();
+  $('choiceGrid').querySelectorAll('.choice').forEach(b=>{b.disabled=true;const n=+b.dataset.i;if(n===x.a)b.classList.add('right');else if(n===i)b.classList.add('wrong');});
+  const j=el.querySelector('.quiz-judge');j.className='quiz-judge '+(ok?'ok':'ng');j.textContent=ok?'正解！':(i==null?'正解は「'+x.ans+'」':'ざんねん　正解は「'+x.ans+'」');if(!ok&&i!=null){const y=document.createElement('small');y.className='quiz-mine';y.textContent='あなたの答え：'+x.ch[i];j.after(y);}
+  el.classList.add('revealed');showSort(true);
+  if(set.say&&deck().lang==='en')speak(x.full);
+}
+function cardEl(x,behind){if(isQuiz())return quizCardEl(x,behind);
   const d=document.createElement('div');d.className='card'+(behind?' behind':'')+(isJE()?' je':'');
   const st=status[x.id],len=[...x.f].length;
   d.innerHTML=`<div class="card-head"><span class="no">No.${String(x.n).padStart(3,'0')}${isJE()?'<span class="dir-tag">日→英</span>':''}</span><span>${st?`<span class="status-tag" style="background:var(--${st}-bg);color:var(--${st})">${LABEL[st]}</span>`:''}${x.c?`<span class="pos">${esc(x.c)}</span>`:''}</span></div>
@@ -1768,12 +1837,12 @@ function renderStudy(){
   $('sessBar').style.width=idx/queue.length*100+'%';
   $('undo').disabled=!history.length;
   if(queue[idx+1])stage.appendChild(cardEl(queue[idx+1],true));
-  const top=cardEl(queue[idx],false);stage.appendChild(top);attach(top);startTimer(top);showSort(false);
-  if(set.say==='show'&&deck().lang==='en'&&!isJE())speak(queue[idx].f);
+  const top=cardEl(queue[idx],false);stage.appendChild(top);if(isQuiz())renderChoices(queue[idx]);attach(top);startTimer(top);showSort(false);
+  if(set.say==='show'&&deck().lang==='en'&&!isJE()&&!isQuiz())speak(queue[idx].f);
 }
-function showSort(on){$('revealRow').hidden=on;$('sortGuide').hidden=!on;$('btnSay').hidden=deck().lang!=='en'||isJE();}
+function showSort(on){const q=isQuiz();$('revealRow').hidden=on||q;$('sortGuide').hidden=!on;$('choiceGrid').hidden=!q||on;$('btnSay').hidden=deck().lang!=='en'||isJE();}
 function topCard(){return stage.querySelector('.card:not(.behind)');}
-function reveal(el){el=el||topCard();if(!el||el.dataset.gone)return;const was=el.classList.contains('revealed');el.classList.add('revealed');showSort(true);
+function reveal(el){el=el||topCard();if(!el||el.dataset.gone)return;if(isQuiz()){if(!el.classList.contains('revealed'))quizAnswer(null);return;}const was=el.classList.contains('revealed');el.classList.add('revealed');showSort(true);
   if(!was&&(set.say==='reveal'||(set.say==='show'&&isJE()))&&deck().lang==='en'&&queue[idx])speak(queue[idx].f);}
 function nudge(el){el=el||topCard();if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');
   const b=$('btnReveal');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}
@@ -1786,7 +1855,7 @@ function attach(el){
     el.style.transform=`translate(${dx}px,${dy}px) rotate(${dx/18}deg)`;
     const d=dirOf(dx,dy,30);for(const k in stamps)stamps[k].style.opacity=k===d?Math.min(1,(Math.max(Math.abs(dx),-dy)-30)/70):0;});
   const end=()=>{if(!down)return;down=false;el.classList.remove('dragging');
-    if(!el.classList.contains('revealed')){el.style.transform='';if(Math.abs(dx)<10&&Math.abs(dy)<10)reveal(el);else nudge(el);return;}
+    if(!el.classList.contains('revealed')){el.style.transform='';if(isQuiz())return;if(Math.abs(dx)<10&&Math.abs(dy)<10)reveal(el);else nudge(el);return;}
     if(Math.abs(dx)<6&&Math.abs(dy)<6){el.style.transform='';return;}
     const d=dirOf(dx,dy,80);
     if(d)fly(el,d);else{el.style.transition='transform .25s';el.style.transform='';for(const k in stamps)stamps[k].style.opacity=0;}};
@@ -1808,7 +1877,8 @@ function commit(d,timedOut){
   if(grow.last!==todayKey()){gain+=10+Math.min(streak.n,7)*2;grow.days++;grow.last=todayKey();}
   const prevPot={potions:grow.potions,earned:grow.earned,best:grow.best};
   grow.xp+=gain;sess.xp+=gain;sess.potions+=checkPotions();store(KEY+'-grow',grow);
-  history.push({id:x.id,prev:status[x.id],d,timedOut,gain,prevLast,prevPot});
+  const qok=isQuiz()&&qState?qState.ok:false;if(qok)sess.ok=(sess.ok||0)+1;
+  history.push({id:x.id,prev:status[x.id],d,timedOut,gain,prevLast,prevPot,ok:qok});
   status[x.id]=d;sess[d]++;if(timedOut)sess.timeouts++;if(d==='no')sess.noList.push(x);
   if(day.d!==todayKey())day={d:todayKey(),n:0};day.n++;day[d]=(day[d]||0)+1;saveAll();idx++;renderStudy();
 }
@@ -1816,14 +1886,15 @@ function act(d){const top=topCard();if(!top)return;if(!top.classList.contains('r
 function undo(){const h=history.pop();if(!h)return;
   if(h.prev)status[h.id]=h.prev;else delete status[h.id];
   grow.xp=Math.max(0,grow.xp-h.gain);sess.xp-=h.gain;sess.potions-=grow.potions-h.prevPot.potions;Object.assign(grow,h.prevPot);if(h.prevLast!==grow.last){grow.last=h.prevLast;grow.days=Math.max(0,grow.days-1);}store(KEY+'-grow',grow);
-  sess[h.d]--;if(h.timedOut)sess.timeouts--;if(h.d==='no')sess.noList.pop();day.n=Math.max(0,day.n-1);if(day.d===todayKey())day[h.d]=Math.max(0,(day[h.d]||0)-1);
+  sess[h.d]--;if(h.ok)sess.ok=Math.max(0,(sess.ok||0)-1);if(h.timedOut)sess.timeouts--;if(h.d==='no')sess.noList.pop();day.n=Math.max(0,day.n-1);if(day.d===todayKey())day[h.d]=Math.max(0,(day[h.d]||0)-1);
   saveAll();idx--;renderStudy();}
 
 /* ---------- RESULT ---------- */
 function finish(){
   const gev=checkGarden();
   show('result');renderReport();
-  $('resSub').textContent=`${queue.length}枚めくりました`+(set.timer?` ・ 時間切れ ${sess.timeouts}回`:'');
+  $('resAgainLbl').textContent=isQuiz()?'覚えていない問題を':'覚えていない単語を';
+  $('resSub').textContent=isQuiz()?`${queue.length}問 ・ 正解 ${sess.ok||0}問（正答率 ${queue.length?Math.round((sess.ok||0)/queue.length*100):0}%）`:`${queue.length}枚めくりました`+(set.timer?` ・ 時間切れ ${sess.timeouts}回`:'');
   $('rKnow').textContent=sess.know;$('rNo').textContent=sess.no;$('rHmm').textContent=sess.hmm;
   const gi=growInfo(grow.xp),L0=levelOf(sess.startXp);
   {const pv=potView(true),st=pv.flower?pv.flower.S:-1,y0=pv.flower?(st<=1?78:st<=2?56:30):gi.L<=1?78:gi.L<=3?56:gi.L<=5?30:0;$('resPlant').innerHTML=pv.svg.replace('viewBox="0 0 120 162"',`viewBox="${y0*0.37} ${y0} ${120-y0*0.74} ${162-y0}"`);}$('resXp').textContent='+'+sess.xp;
@@ -2105,6 +2176,9 @@ $('resetSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)close
 $('rsGo').onclick=()=>{const n=rsCount(rsPick);deck().items.forEach(x=>{if(rsPick==='all'?status[x.id]:status[x.id]===rsPick)delete status[x.id];});
   saveAll();closeReset();renderTop();toast(`${n}枚を未学習に戻しました`);};
 document.addEventListener('keydown',e=>{if(current!=='study')return;
+  if(isQuiz()){const t=topCard();if(!t)return;
+    if(/^[1-4]$/.test(e.key)&&!t.classList.contains('revealed')){const b=$('choiceGrid').children[+e.key-1];if(b)b.click();return;}
+    if(!t.classList.contains('revealed')&&(e.key===' '||e.key==='Enter'||e.key.startsWith('Arrow'))){e.preventDefault();return;}}
   if(e.key==='ArrowRight')act('know');else if(e.key==='ArrowLeft')act('no');else if(e.key==='ArrowUp')act('hmm');
   else if(e.key===' '||e.key==='Enter'){e.preventDefault();reveal();}
   else if(e.key==='z'||e.key==='Backspace')undo();
@@ -2268,9 +2342,10 @@ $('csClose').onclick=()=>{$('cardSheet').hidden=true;};
 $('cardSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)$('cardSheet').hidden=true;});
 $('findBtn').onclick=()=>openSort('all');
 $('newsBtn').onclick=()=>{if(NEWS[0])newsPop(NEWS[0],true);};
+
 $('btnSay').onclick=e=>{if(queue[idx])speak(queue[idx].f,e.currentTarget);};
 function renderAutoSay(){const b=$('autoSay');b.hidden=deck().lang!=='en';const on=!!set.say;b.setAttribute('aria-pressed',String(on));b.textContent=on?'🔊 自動 ON':'🔇 自動 OFF';b.setAttribute('aria-label',on?'発音の自動再生：オン':'発音の自動再生：オフ');}
-$('autoSay').onclick=()=>{set.say=set.say?'':(isJE()?'reveal':'show');saveAll();renderAutoSay();const t=topCard();if(set.say&&queue[idx]&&(!isJE()||(t&&t.classList.contains('revealed'))))speak(queue[idx].f);};
+$('autoSay').onclick=()=>{set.say=set.say?'':(isJE()?'reveal':'show');saveAll();renderAutoSay();const t=topCard();if(set.say&&queue[idx]&&((!isJE()&&!isQuiz())||(t&&t.classList.contains('revealed'))))speak(queue[idx].f);};
 $('preCancel').onclick=closePre;$('preSheet').addEventListener('click',e=>{if(e.target===e.currentTarget)closePre();});
 $('preGo').onclick=()=>{const a=preArgs;if($('preSkip').checked){set.skipPre=true;saveAll();}closePre();renderTop();if(a)runSession(...a);if($('preSkip').checked)toast('次からすぐ始まります。設定の「スタート前の確認」で戻せます');};
 function renderDir(){const g=$('dirSeg');if(!g)return;g.hidden=!(deck().lang==='en'&&!deck().formula);g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.d===set.dir)));}
