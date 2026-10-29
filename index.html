@@ -663,9 +663,9 @@ body{word-break:auto-phrase;line-break:strict}
 .quiz-more .qm{background:var(--desk-2,#EEF2F6);border-radius:10px;padding:10px 12px;font-size:.88rem;line-height:1.6}
 .quiz-more .qm b{display:block;font-size:.7rem;color:var(--ink-soft);margin-bottom:2px}
 .quiz-more .say-btn{align-self:center}
-.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice-grid{touch-action:manipulation;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .choice-grid[hidden],.quiz-next[hidden]{display:none}
-.choice{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:16px 10px;min-height:84px;font-family:var(--f-word);font-size:1.25rem;line-height:1.25;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+.choice{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:16px 10px;min-height:84px;font-family:var(--f-word);font-size:1.25rem;line-height:1.25;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
 .choice:disabled{cursor:default;opacity:.55}
 .choice.right{opacity:1;border-color:var(--know);background:var(--know-bg);color:var(--know)}
 .choice.wrong{opacity:1;border-color:var(--no);background:var(--no-bg);color:var(--no)}
@@ -1786,7 +1786,7 @@ function quizCardEl(x,behind){
 let qState=null;
 function renderChoices(x){
   const g=$('choiceGrid');g.innerHTML='';const order=shuffle([0,1,2,3]);qState={x,order,picked:null,ok:false};
-  order.forEach((i,k)=>{const b=document.createElement('button');b.type='button';b.className='choice';b.lang='en';b.textContent=x.ch[i];b.dataset.i=i;b.setAttribute('aria-label',`${k+1}. ${x.ch[i]}`);b.onclick=()=>quizAnswer(i);g.appendChild(b);});
+  order.forEach((i,k)=>{const b=document.createElement('button');b.type='button';b.className='choice';b.lang='en';b.textContent=x.ch[i];b.dataset.i=i;b.setAttribute('aria-label',`${k+1}. ${x.ch[i]}`);b.onclick=()=>quizAnswer(i);b.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse'&&e.isPrimary){e.preventDefault();quizAnswer(i);}});g.appendChild(b);});
 }
 function quizAnswer(i){
   const el=topCard();if(!el||!qState||el.classList.contains('revealed'))return;
